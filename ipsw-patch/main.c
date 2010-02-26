@@ -290,6 +290,9 @@ int main(int argc, char* argv[]) {
 			pIV = iv;
 		}
 
+		BoolValue *isPlainValue = (BoolValue *)getValueByKey(patchDict, "IsPlain");
+		int isPlain = (isPlainValue && isPlainValue->value);
+
 		if(strcmp(patchDict->dValue.key, "Restore Ramdisk") == 0) {
 			ramdiskFSPathInIPSW = fileValue->value;
 			if(pKey) {
@@ -311,7 +314,7 @@ int main(int argc, char* argv[]) {
 		if(patchValue) {
 			if(noWipe) {
 				XLOG(0, "%s: ", patchDict->dValue.key); fflush(stdout);
-				doPatch(patchValue, fileValue, bundlePath, &outputState, pKey, pIV, useMemory);
+				doPatch(patchValue, fileValue, bundlePath, &outputState, pKey, pIV, useMemory, isPlain);
 				patchDict = (Dictionary*) patchDict->dValue.next;
 				continue; /* skip over the normal Patch */
 			}
@@ -320,7 +323,7 @@ int main(int argc, char* argv[]) {
 		patchValue = (StringValue*) getValueByKey(patchDict, "Patch");
 		if(patchValue) {
 			XLOG(0, "%s: ", patchDict->dValue.key); fflush(stdout);
-			doPatch(patchValue, fileValue, bundlePath, &outputState, pKey, pIV, useMemory);
+			doPatch(patchValue, fileValue, bundlePath, &outputState, pKey, pIV, useMemory, isPlain);
 		}
 		
 		if(strcmp(patchDict->dValue.key, "AppleLogo") == 0 && applelogo) {

@@ -119,7 +119,7 @@ Dictionary* parseIPSW2(const char* inputIPSW, const char* bundleRoot, char** bun
 	return info;
 }
 
-int doPatch(StringValue* patchValue, StringValue* fileValue, const char* bundlePath, OutputState** state, unsigned int* key, unsigned int* iv, int useMemory) {
+int doPatch(StringValue* patchValue, StringValue* fileValue, const char* bundlePath, OutputState** state, unsigned int* key, unsigned int* iv, int useMemory, int isPlain) {
 	char* patchPath;
 	size_t bufferSize;
 	void* buffer;
@@ -149,18 +149,23 @@ int doPatch(StringValue* patchValue, StringValue* fileValue, const char* bundleP
 	
 	patchFile = createAbstractFileFromFile(fopen(patchPath, "rb"));
 
-	if(key != NULL) {
-		XLOG(0, "encrypted input... ");
-		out = duplicateAbstractFile2(getFileFromOutputState(state, fileValue->value), outRaw, key, iv, NULL);
+	if (isPlain) {
+		out = outRaw;
+		file = getFileFromOutputState(state, fileValue->value);
 	} else {
-		out = duplicateAbstractFile(getFileFromOutputState(state, fileValue->value), outRaw);
-	}
+		if(key != NULL) {
+			XLOG(0, "encrypted input... ");
+			out = duplicateAbstractFile2(getFileFromOutputState(state, fileValue->value), outRaw, key, iv, NULL);
+		} else {
+			out = duplicateAbstractFile(getFileFromOutputState(state, fileValue->value), outRaw);
+		}
 
-	if(key != NULL) {
-		XLOG(0, "encrypted output... ");
-		file = openAbstractFile2(getFileFromOutputState(state, fileValue->value), key, iv);
-	} else {
-		file = openAbstractFile(getFileFromOutputState(state, fileValue->value));
+		if(key != NULL) {
+			XLOG(0, "encrypted output... ");
+			file = openAbstractFile2(getFileFromOutputState(state, fileValue->value), key, iv);
+		} else {
+			file = openAbstractFile(getFileFromOutputState(state, fileValue->value));
+		}
 	}
 	
 	if(!patchFile || !file || !out) {
