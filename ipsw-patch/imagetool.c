@@ -7,8 +7,8 @@
 #include <string.h>
 
 void print_usage() {
-	XLOG(0, "usage:\timagetool extract <source.img2/3> <destination.png> [iv] [key]");
-	XLOG(0, "usage:\timagetool inject <source.png> <destination.img2/3> <template.img2/3> [iv] [key]");
+	printf("usage:\timagetool extract <source.img2/3> <destination.png> [iv] [key]\n");
+	printf("usage:\timagetool inject <source.png> <destination.img2/3> <template.img2/3> [iv] [key]\n");
 }
 
 int main(int argc, char* argv[]) {
