@@ -11,7 +11,7 @@ int main(int argc, char* argv[]) {
 	init_libxpwn();
 
 	if(argc < 3) {
-		printf("usage: %s <infile> <outfile> [-x24k] [-t <template> [-c <certificate>]] [-k <key>] [-iv <key>] [-decrypt]\n", argv[0]);
+		printf("usage: %s <infile> <outfile> [-x24k|-xn8824k] [-t <template> [-c <certificate>]] [-k <key>] [-iv <key>] [-decrypt]\n", argv[0]);
 		return 0;
 	}
 
@@ -22,6 +22,7 @@ int main(int argc, char* argv[]) {
 	int hasKey = FALSE;
 	int hasIV = FALSE;
 	int x24k = FALSE;
+	int xn8824k = FALSE;
 	int doDecrypt = FALSE;
 
 	int argNo = 3;
@@ -65,6 +66,10 @@ int main(int argc, char* argv[]) {
 
 		if(strcmp(argv[argNo], "-x24k") == 0) {
 			x24k = TRUE;
+		}
+
+		if(strcmp(argv[argNo], "-xn8824k") == 0) {
+			xn8824k = TRUE;
 		}
 
 		argNo++;
@@ -122,6 +127,12 @@ int main(int argc, char* argv[]) {
 	if(x24k) {
 		if(newFile->type == AbstractFileTypeImg3) {
 			exploit24kpwn(newFile);
+		}
+	}
+
+	if(xn8824k) {
+		if(newFile->type == AbstractFileTypeImg3) {
+			exploitN8824kpwn(newFile);
 		}
 	}
 
