@@ -8,7 +8,7 @@
 int main(int argc, char* argv[]) {
 	char* inData;
 	size_t inDataSize;
-	init_libxpwn();
+	init_libxpwn(&argc, argv);
 
 	if(argc < 3) {
 		printf("usage: %s <infile> <outfile> [-x24k|-xn8824k] [-t <template> [-c <certificate>]] [-k <key>] [-iv <key>] [-decrypt]\n", argv[0]);

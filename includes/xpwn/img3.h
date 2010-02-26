@@ -73,6 +73,7 @@ struct Img3Info {
 	char dirty;
 	char exploit24k;
 	char exploitN8824k;
+	char decryptLast;
 };
 
 #ifdef __cplusplus

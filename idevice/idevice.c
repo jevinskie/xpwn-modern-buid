@@ -148,7 +148,7 @@ int main(int argc, char* argv[])
 {
 	struct stat st;
 
-	init_libxpwn();
+	init_libxpwn(&argc, argv);
 	libxpwn_log(logCB);
 	libxpwn_loglevel(2);
 

@@ -57,7 +57,7 @@ void closeRoot(void* buffer) {
 }
 
 int main(int argc, char* argv[]) {
-	init_libxpwn();
+	init_libxpwn(&argc, argv);
 	
 	Dictionary* info;
 	Dictionary* firmwarePatches;

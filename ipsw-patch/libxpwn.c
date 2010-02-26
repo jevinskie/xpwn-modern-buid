@@ -7,6 +7,8 @@ LogMessageCallback logCallback;
 char endianness;
 int GlobalLogLevel;
 
+int Img3DecryptLast = TRUE; /* FALSE for <= 7a341, TRUE for >= 7c144 */
+
 void TestByteOrder()
 {
 	short int word = 0x0001;
@@ -18,7 +20,17 @@ void defaultCallback(const char* Message) {
 	printf("%s", Message);
 }
 
-void init_libxpwn() {
+void init_libxpwn(int *argc, char *argv[]) {
+	int i, j, n = *argc;
+	for (i = 0; i < n; i++) {
+		if (!strcmp(argv[i], "--old-img3-decrypt")) {
+			n--;
+			memmove(&argv[i], &argv[i + 1], (n - i) * sizeof(char *));
+			Img3DecryptLast = FALSE;
+		}
+	}
+	argv[*argc = n] = NULL;
+
 	TestByteOrder();
 	GlobalLogLevel = 0xFF;
 	logCallback = defaultCallback;

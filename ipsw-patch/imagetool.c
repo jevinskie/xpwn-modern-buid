@@ -12,7 +12,7 @@ void print_usage() {
 }
 
 int main(int argc, char* argv[]) {
-	init_libxpwn();
+	init_libxpwn(&argc, argv);
 	
 	if(argc < 4) {
 		print_usage();

@@ -193,12 +193,15 @@ size_t writeImg3(AbstractFile* file, const void* data, size_t len) {
 	Img3Info* info = (Img3Info*) file->data;
 
 	while((info->offset + (size_t)len) > info->data->header->dataSize) {
+		uint32_t oldSize = info->data->header->dataSize;
 		info->data->header->dataSize = info->offset + (size_t)len;
-		info->data->header->size = info->data->header->dataSize + sizeof(AppleImg3Header);
-		if(info->data->header->size % 0x4 != 0) {
-			info->data->header->size += 0x4 - (info->data->header->size % 0x4);
+		info->data->header->size = info->data->header->dataSize;
+		if(info->data->header->size % 0x20 != 0) {
+			info->data->header->size += 0x20 - (info->data->header->size % 0x20); /* PwnageTool(mac): 0x20, Apple: 0x10? */
 		}
-		info->data->data = realloc(info->data->data, info->data->header->dataSize);
+		info->data->header->size += sizeof(AppleImg3Header);
+		info->data->data = realloc(info->data->data, info->data->header->dataSize + 32); /* hack for decryptLast rounding up */
+		memset((uint8_t *)info->data->data + oldSize, 0, info->data->header->dataSize + 32 - oldSize); /* bigger block, zero */
 	}
 	
 	memcpy((void*)((uint8_t*)info->data->data + (uint32_t)info->offset), data, len);
@@ -230,9 +233,13 @@ void closeImg3(AbstractFile* file) {
 
 	if(info->dirty) {
 		if(info->encrypted) {
+			uint32_t sz = info->data->header->dataSize;
+			if (info->decryptLast) {
+				sz = info->data->header->size;
+			}
 			uint8_t ivec[16];
 			memcpy(ivec, info->iv, 16);
-			AES_cbc_encrypt(info->data->data, info->data->data, (info->data->header->dataSize / 16) * 16, &(info->encryptKey), ivec, AES_ENCRYPT);
+			AES_cbc_encrypt(info->data->data, info->data->data, (sz / 16) * 16, &(info->encryptKey), ivec, AES_ENCRYPT);
 		}
 
 		if(info->exploit24k) {
@@ -279,10 +286,15 @@ void setKeyImg3(AbstractFile2* file, const unsigned int* key, const unsigned int
 	AES_set_encrypt_key(bKey, keyBits, &(info->encryptKey));
 	AES_set_decrypt_key(bKey, keyBits, &(info->decryptKey));
 
+	info->decryptLast = Img3DecryptLast;
 	if(!info->encrypted) {
+		uint32_t sz = info->data->header->dataSize;
+		if (info->decryptLast) {
+			sz = info->data->header->size;
+		}
 		uint8_t ivec[16];
 		memcpy(ivec, info->iv, 16);
-		AES_cbc_encrypt(info->data->data, info->data->data, (info->data->header->dataSize / 16) * 16, &(info->decryptKey), ivec, AES_DECRYPT);
+		AES_cbc_encrypt(info->data->data, info->data->data, (sz / 16) * 16, &(info->decryptKey), ivec, AES_DECRYPT);
 	}
 
 	info->encrypted = TRUE;
@@ -386,10 +398,18 @@ void writeImg3Root(AbstractFile* file, Img3Element* element, Img3Info* info) {
 }
 
 void writeImg3Default(AbstractFile* file, Img3Element* element, Img3Info* info) {
-	const char zeros[0x10] = {0};
-	file->write(file, element->data, element->header->dataSize);
-	if((element->header->size - sizeof(AppleImg3Header)) > element->header->dataSize) {
-		file->write(file, zeros, (element->header->size - sizeof(AppleImg3Header)) - element->header->dataSize);
+	int sz = element->header->size - sizeof(AppleImg3Header) - element->header->dataSize;
+	if (info->encrypted && element->header->magic == IMG3_DATA_MAGIC) {
+		/* add "encrypted" zeros */
+		file->write(file, element->data, element->header->dataSize + sz);
+	} else {
+		/* add "plain" zeros */
+		file->write(file, element->data, element->header->dataSize);
+		if (sz > 0) {
+			char *zeros = calloc(1, sz);
+			file->write(file, zeros, sz);
+			free(zeros);
+		}
 	}
 }
 
@@ -485,11 +505,13 @@ Img3Element* readImg3Element(AbstractFile* file) {
 			flipAppleImg3KBAGHeader((AppleImg3KBAGHeader*) toReturn->data);
 			break;
 
-		default:
-			toReturn->data = (unsigned char*) malloc(header->dataSize);
+		default: {
+			uint32_t sz = header->size - sizeof(AppleImg3Header); /* header->dataSize */
+			toReturn->data = (unsigned char*) malloc(sz);
 			toReturn->write = writeImg3Default;
 			toReturn->free = freeImg3Default;
-			file->read(file, toReturn->data, header->dataSize);
+			file->read(file, toReturn->data, sz);
+		}
 	}
 
 	file->seek(file, curPos + toReturn->header->size);
@@ -516,7 +538,6 @@ AbstractFile* createAbstractFileFromImg3(AbstractFile* file) {
 	info->cert = NULL;
 	info->kbag = NULL;
 	info->type = NULL;
-	info->encrypted = FALSE;
 
 	current = (Img3Element*) info->root->data;
 	while(current != NULL) {
@@ -540,6 +561,7 @@ AbstractFile* createAbstractFileFromImg3(AbstractFile* file) {
 	info->exploit24k = FALSE;
 	info->exploitN8824k = FALSE;
 	info->encrypted = FALSE;
+	info->decryptLast = FALSE;
 
 	toReturn = (AbstractFile*) malloc(sizeof(AbstractFile2));
 	toReturn->data = info;

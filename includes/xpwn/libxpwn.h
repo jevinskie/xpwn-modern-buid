@@ -18,7 +18,7 @@ extern LogMessageCallback logCallback;
 #ifdef __cplusplus
 extern "C" {
 #endif
-	void init_libxpwn();
+	void init_libxpwn(int *argc, char *argv[]);
 	void libxpwn_log(LogMessageCallback callback);
 	void libxpwn_loglevel(int logLevel);
 	void Log(int level, const char* file, unsigned int line, const char* function, const char* format, ...);
@@ -26,6 +26,8 @@ extern "C" {
 #ifdef __cplusplus
 }
 #endif
+
+extern int Img3DecryptLast; /* FALSE for <= 7a341, TRUE for >= 7c144 */
 
 #endif
 
