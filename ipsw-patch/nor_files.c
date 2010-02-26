@@ -38,6 +38,10 @@ AbstractFile* duplicateAbstractFile(AbstractFile* file, AbstractFile* backing) {
 	uint32_t signatureBE;
 	uint32_t signatureLE;
 	AbstractFile* orig;
+
+	if (!backing) { /* imagine that: createAbstractFileFromComp() fails, because of decompress_lzss() */
+		return NULL;
+	}
 	
 	file->seek(file, 0);
 	file->read(file, &signatureBE, sizeof(signatureBE));

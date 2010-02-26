@@ -186,7 +186,7 @@ int patch(AbstractFile* in, AbstractFile* out, AbstractFile* patch) {
 			in->seek(in, oldpos);
 			unsigned int maxRead;
 			if((oldpos + toRead) > oldsize)
-				maxRead = oldsize - oldpos;
+				maxRead = (oldsize > oldpos) ? oldsize - oldpos : 0;
 			else
 				maxRead = toRead;
 
