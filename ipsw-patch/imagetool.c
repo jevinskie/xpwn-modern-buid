@@ -25,7 +25,7 @@ int main(int argc, char* argv[]) {
 	void* imageBuffer;
 	size_t imageSize;
 
-	unsigned int key[16];
+	unsigned int key[32];
 	unsigned int iv[16];
 	unsigned int* pKey = NULL;
 	unsigned int* pIV = NULL;
@@ -45,9 +45,11 @@ int main(int argc, char* argv[]) {
 				&iv[0], &iv[1], &iv[2], &iv[3], &iv[4], &iv[5], &iv[6], &iv[7], &iv[8],
 				&iv[9], &iv[10], &iv[11], &iv[12], &iv[13], &iv[14], &iv[15]);
 
-			sscanf(argv[6], "%2x%2x%2x%2x%2x%2x%2x%2x%2x%2x%2x%2x%2x%2x%2x%2x",
+			sscanf(argv[6], "%2x%2x%2x%2x%2x%2x%2x%2x%2x%2x%2x%2x%2x%2x%2x%2x%2x%2x%2x%2x%2x%2x%2x%2x%2x%2x%2x%2x%2x%2x%2x%2x",
 				&key[0], &key[1], &key[2], &key[3], &key[4], &key[5], &key[6], &key[7], &key[8],
-				&key[9], &key[10], &key[11], &key[12], &key[13], &key[14], &key[15]);
+				&key[9], &key[10], &key[11], &key[12], &key[13], &key[14], &key[15],
+				&key[16], &key[17], &key[18], &key[19], &key[20], &key[21], &key[22], &key[23], &key[24],
+				&key[25], &key[26], &key[27], &key[28], &key[29], &key[30], &key[31]);
 
 			pKey = key;
 			pIV = iv;
@@ -64,9 +66,11 @@ int main(int argc, char* argv[]) {
 				&iv[0], &iv[1], &iv[2], &iv[3], &iv[4], &iv[5], &iv[6], &iv[7], &iv[8],
 				&iv[9], &iv[10], &iv[11], &iv[12], &iv[13], &iv[14], &iv[15]);
 
-			sscanf(argv[5], "%2x%2x%2x%2x%2x%2x%2x%2x%2x%2x%2x%2x%2x%2x%2x%2x",
+			sscanf(argv[5], "%2x%2x%2x%2x%2x%2x%2x%2x%2x%2x%2x%2x%2x%2x%2x%2x%2x%2x%2x%2x%2x%2x%2x%2x%2x%2x%2x%2x%2x%2x%2x%2x",
 				&key[0], &key[1], &key[2], &key[3], &key[4], &key[5], &key[6], &key[7], &key[8],
-				&key[9], &key[10], &key[11], &key[12], &key[13], &key[14], &key[15]);
+				&key[9], &key[10], &key[11], &key[12], &key[13], &key[14], &key[15],
+				&key[16], &key[17], &key[18], &key[19], &key[20], &key[21], &key[22], &key[23], &key[24],
+				&key[25], &key[26], &key[27], &key[28], &key[29], &key[30], &key[31]);
 
 			pKey = key;
 			pIV = iv;

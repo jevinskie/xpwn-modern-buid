@@ -82,7 +82,7 @@ int main(int argc, char* argv[]) {
 	size_t minimumRootSize = 0;
 	
 	char* ramdiskFSPathInIPSW;
-	unsigned int ramdiskKey[16];
+	unsigned int ramdiskKey[32];
 	unsigned int ramdiskIV[16];
 	unsigned int* pRamdiskKey = NULL;
 	unsigned int* pRamdiskIV = NULL;
@@ -119,7 +119,7 @@ int main(int argc, char* argv[]) {
 	char updateBB = FALSE;
 	char useMemory = FALSE;
 
-	unsigned int key[16];
+	unsigned int key[32];
 	unsigned int iv[16];
 
 	unsigned int* pKey = NULL;
@@ -276,9 +276,11 @@ int main(int argc, char* argv[]) {
 		pIV = NULL;
 
 		if(keyValue) {
-			sscanf(keyValue->value, "%2x%2x%2x%2x%2x%2x%2x%2x%2x%2x%2x%2x%2x%2x%2x%2x",
+			sscanf(keyValue->value, "%2x%2x%2x%2x%2x%2x%2x%2x%2x%2x%2x%2x%2x%2x%2x%2x%2x%2x%2x%2x%2x%2x%2x%2x%2x%2x%2x%2x%2x%2x%2x%2x",
 				&key[0], &key[1], &key[2], &key[3], &key[4], &key[5], &key[6], &key[7], &key[8],
-				&key[9], &key[10], &key[11], &key[12], &key[13], &key[14], &key[15]);
+				&key[9], &key[10], &key[11], &key[12], &key[13], &key[14], &key[15],
+				&key[16], &key[17], &key[18], &key[19], &key[20], &key[21], &key[22], &key[23], &key[24],
+				&key[25], &key[26], &key[27], &key[28], &key[29], &key[30], &key[31]);
 
 			pKey = key;
 		}
