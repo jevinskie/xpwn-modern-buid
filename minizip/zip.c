@@ -866,6 +866,10 @@ extern int ZEXPORT zipOpenNewFileInZip3 (file, filename, zipfi,
         if (err==Z_OK)
             zi->ci.stream_initialised = 1;
     }
+    else
+    {
+        zi->ci.stream.data_type = Z_UNKNOWN;
+    }
 #    ifndef NOCRYPT
     zi->ci.crypt_header_size = 0;
     if ((err==Z_OK) && (password != NULL))

@@ -235,6 +235,7 @@ int buildDmg(AbstractFile* abstractIn, AbstractFile* abstractOut, unsigned int B
 	koly.fUDIFSegmentID.data4 = rand();
 	koly.fUDIFDataForkChecksum.type = CHECKSUM_CRC32;
 	koly.fUDIFDataForkChecksum.size = 0x20;
+	memset(&koly.fUDIFDataForkChecksum.data, 0, sizeof(koly.fUDIFDataForkChecksum.data));
 	koly.fUDIFDataForkChecksum.data[0] = dataForkChecksum;
 	koly.fUDIFXMLOffset = plistOffset;
 	koly.fUDIFXMLLength = plistSize;
@@ -242,6 +243,7 @@ int buildDmg(AbstractFile* abstractIn, AbstractFile* abstractOut, unsigned int B
 	
 	koly.fUDIFMasterChecksum.type = CHECKSUM_CRC32;
 	koly.fUDIFMasterChecksum.size = 0x20;
+	memset(&koly.fUDIFMasterChecksum.data, 0, sizeof(koly.fUDIFMasterChecksum.data));
 	koly.fUDIFMasterChecksum.data[0] = calculateMasterChecksum(resources);
 	printf("Master checksum: %x\n", koly.fUDIFMasterChecksum.data[0]); fflush(stdout); 
 	
