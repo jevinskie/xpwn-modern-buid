@@ -252,7 +252,7 @@ int convertToPNG(AbstractFile* imageWrapper, const unsigned int* key, const unsi
 	png_write_info(png_ptr, info_ptr);
 
 
-	void* imageBuffer = malloc(imageFile->getLength(imageFile));
+	uint8_t *imageBuffer = malloc(imageFile->getLength(imageFile));
 	imageFile->read(imageFile, imageBuffer, imageFile->getLength(imageFile));
 
 	png_bytepp row_pointers = (png_bytepp) malloc(sizeof(png_bytep) * info->header.height);
