@@ -68,6 +68,10 @@ Usage
 There are three utilities in this package, as well as the bundles and
 FirmwareBundles folders from PwnageTool, and Turbo's autopwn ramdisk.
 
+*NOTE: Img3 decoding has been changed in newer firmwares (>= 3.1). Backwards
+compatibility with older firmwares is achieved by passing "--old-img3-decrypt"
+to idevice, imagetool, ipsw, xpwntool.*
+
 ## Overview
 
 The general series of steps should be to use ipsw to create a custom IPSW with
