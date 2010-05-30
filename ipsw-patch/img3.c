@@ -270,6 +270,9 @@ void closeImg3(AbstractFile* file) {
 
 void setKeyImg3(AbstractFile2* file, const unsigned int* key, const unsigned int* iv) {
 	Img3Info* info = (Img3Info*) file->super.data;
+	if (!info->kbag) {
+		return;
+	}
 
 	int i;
 	uint8_t bKey[32];
