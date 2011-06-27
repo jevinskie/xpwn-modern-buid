@@ -19,6 +19,7 @@ typedef struct
 	uint32_t	bits;
 	uint8_t		keybuf[32];
 	uint32_t	mask;
+	uint32_t	wtf0; /* required since 4.1, unused as of 4.3.3 */
 } IOAESStruct;
 
 #define kIOAESAcceleratorInfo 0
