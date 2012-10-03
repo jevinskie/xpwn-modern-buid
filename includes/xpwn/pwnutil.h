@@ -17,7 +17,7 @@ extern "C" {
 	void doPatchInPlace(Volume* volume, const char* filePath, const char* patchPath);
 	void doPatchInPlaceMemoryPatch(Volume* volume, const char* filePath, void** patch, size_t* patchSize);
 	void fixupBootNeuterArgs(Volume* volume, char unlockBaseband, char selfDestruct, char use39, char use46);
-	void createRestoreOptions(Volume* volume, int SystemPartitionSize, int UpdateBaseband);
+	void createRestoreOptions(Volume* volume, const char *optionsPlist, int SystemPartitionSize, int UpdateBaseband);
 
 	int patchSigCheck(AbstractFile* file);
 	int patchKernel(AbstractFile* file);

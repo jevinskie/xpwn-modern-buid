@@ -471,7 +471,9 @@ int main(int argc, char* argv[]) {
 		fixupBootNeuterArgs(rootVolume, unlockBaseband, selfDestruct, use39, use46);
 	}
 
-	createRestoreOptions(ramdiskVolume, preferredRootSize, updateBB);
+	StringValue* optionsValue = (StringValue*) getValueByKey(info, "RamdiskOptionsPath");
+	const char *optionsPlist = optionsValue ? optionsValue->value : "/usr/local/share/restore/options.plist";
+	createRestoreOptions(ramdiskVolume, optionsPlist, preferredRootSize, updateBB);
 	closeVolume(ramdiskVolume);
 	CLOSE(ramdiskFS);
 

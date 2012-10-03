@@ -301,15 +301,38 @@ void doPatchInPlaceMemoryPatch(Volume* volume, const char* filePath, void** patc
 	XLOG(0, "success\n"); fflush(stdout);
 }
 
-void createRestoreOptions(Volume* volume, int SystemPartitionSize, int UpdateBaseband) {
-	const char optionsPlist[] = "/usr/local/share/restore/options.plist";
+void createRestoreOptions(Volume* volume, const char *optionsPlist, int SystemPartitionSize, int UpdateBaseband) {
 	AbstractFile* plistFile;
 	Dictionary* info;
 	char* plist;
 
+	HFSPlusCatalogRecord* record;
+	info = NULL;
+	record = getRecordFromPath(optionsPlist, volume, NULL, NULL);
+	if(record != NULL && record->recordType == kHFSPlusFileRecord) {
+		HFSPlusCatalogFile* file = (HFSPlusCatalogFile*)record;
+		size_t bufferSize = 512;
+		plist = malloc(bufferSize);
+		plistFile = createAbstractFileFromMemory((void**)&plist, bufferSize);
+		if (plistFile) {
+			char zero = 0;
+			writeToFile(file, plistFile, volume);
+			plistFile->write(plistFile, &zero, sizeof(zero));
+			plistFile->close(plistFile);
+			info = createRoot(plist);
+			removeKey(info, "CreateFilesystemPartitions");
+			removeKey(info, "SystemPartitionSize");
+			removeKey(info, "UpdateBaseband");
+			removeKey(info, "MinimumSystemPartition");
+			addIntegerToDictionary(info, "MinimumSystemPartition", SystemPartitionSize);
+			XLOG(0, "got %s from ramdisk\n", optionsPlist);
+		}
+		free(plist);
+	}
+
 	XLOG(0, "start create restore options\n");
 
-	info = createRoot("<dict></dict>");
+	if (!info) info = createRoot("<dict></dict>");
 	addBoolToDictionary(info, "CreateFilesystemPartitions", TRUE);
 	addIntegerToDictionary(info, "SystemPartitionSize", SystemPartitionSize);
 	addBoolToDictionary(info, "UpdateBaseband", UpdateBaseband);
