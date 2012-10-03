@@ -68,9 +68,18 @@ static int compressedRead(io_func* io, off_t location, size_t size, void *buffer
 		if(data->cached)
 			free(data->cached);
 
-		data->cached = (uint8_t*) malloc(0x10000);
-		actualSize = 0x10000;
-		uncompress(data->cached, &actualSize, compressed, data->blocks->blocks[block].size);
+		if (compressed[0] == 0xFF) {
+			actualSize = data->blocks->blocks[block].size - 1;
+			data->cached = (uint8_t*) malloc(actualSize);
+			memcpy(data->cached, compressed + 1, actualSize);
+		} else {
+			data->cached = (uint8_t*) malloc(0x10000);
+			actualSize = 0x10000;
+			int rv = uncompress(data->cached, &actualSize, compressed, data->blocks->blocks[block].size);
+			if (rv) {
+				hfs_panic("error decompressing");
+			}
+		}
 		data->cachedStart = block * 0x10000;
 		data->cachedEnd = data->cachedStart + actualSize;
 		free(compressed);
