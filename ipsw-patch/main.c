@@ -356,18 +356,18 @@ int main(int argc, char* argv[]) {
 	rootFSPathInIPSW = fileValue->value;
 
 	size_t defaultRootSize = ((IntegerValue*) getValueByKey(info, "RootFilesystemSize"))->value;
-	minimumRootSize = defaultRootSize * 1000 * 1000;
+	minimumRootSize = defaultRootSize * 1024 * 1024;
 	minimumRootSize -= minimumRootSize % 512;
 
 	if(preferredRootSize == 0) {	
 		preferredRootSize = defaultRootSize;
 	}
 
-	rootSize =  preferredRootSize * 1000 * 1000;
+	rootSize =  preferredRootSize * 1024 * 1024;
 	rootSize -= rootSize % 512;
 
 	if(useMemory) {
-		buffer = malloc(rootSize);
+		buffer = calloc(1, rootSize);
 	} else {
 		buffer = NULL;
 	}
