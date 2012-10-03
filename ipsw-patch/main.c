@@ -88,6 +88,7 @@ int main(int argc, char* argv[]) {
 	unsigned int* pRamdiskIV = NULL;
 	io_func* ramdiskFS;
 	Volume* ramdiskVolume;
+	size_t ramdiskGrow = 0;
 
 	char* updateRamdiskFSPathInIPSW = NULL; 
 
@@ -126,7 +127,7 @@ int main(int argc, char* argv[]) {
 	unsigned int* pIV = NULL;
 
 	if(argc < 3) {
-		XLOG(0, "usage %s <input.ipsw> <target.ipsw> [-b <bootimage.png>] [-r <recoveryimage.png>] [-s <system partition size>] [-memory] [-bbupdate] [-nowipe] [-e \"<action to exclude>\"] [[-unlock] [-use39] [-use46] [-cleanup] -3 <bootloader 3.9 file> -4 <bootloader 4.6 file>] <package1.tar> <package2.tar>...\n", argv[0]);
+		XLOG(0, "usage %s <input.ipsw> <target.ipsw> [-b <bootimage.png>] [-r <recoveryimage.png>] [-s <system partition size>] [-memory] [-bbupdate] [-nowipe] [-e \"<action to exclude>\"] [-ramdiskgrow <blocks>] [[-unlock] [-use39] [-use46] [-cleanup] -3 <bootloader 3.9 file> -4 <bootloader 4.6 file>] <package1.tar> <package2.tar>...\n", argv[0]);
 		return 0;
 	}
 
@@ -149,6 +150,14 @@ int main(int argc, char* argv[]) {
 			int size;
 			sscanf(argv[i + 1], "%d", &size);
 			preferredRootSize = size;
+			i++;
+			continue;
+		}
+
+		if(strcmp(argv[i], "-ramdiskgrow") == 0) {
+			int size;
+			sscanf(argv[i + 1], "%d", &size);
+			ramdiskGrow = size;
 			i++;
 			continue;
 		}
@@ -429,8 +438,8 @@ int main(int argc, char* argv[]) {
 		ramdiskFS = IOFuncFromAbstractFile(openAbstractFile(getFileFromOutputStateForOverwrite(&outputState, ramdiskFSPathInIPSW)));
 	}
 	ramdiskVolume = openVolume(ramdiskFS);
-	XLOG(0, "growing ramdisk: %d -> %d\n", ramdiskVolume->volumeHeader->totalBlocks * ramdiskVolume->volumeHeader->blockSize, (ramdiskVolume->volumeHeader->totalBlocks + 4) * ramdiskVolume->volumeHeader->blockSize);
-	grow_hfs(ramdiskVolume, (ramdiskVolume->volumeHeader->totalBlocks + 4) * ramdiskVolume->volumeHeader->blockSize);
+	XLOG(0, "growing ramdisk: %d -> %d\n", ramdiskVolume->volumeHeader->totalBlocks * ramdiskVolume->volumeHeader->blockSize, (ramdiskVolume->volumeHeader->totalBlocks + ramdiskGrow) * ramdiskVolume->volumeHeader->blockSize);
+	grow_hfs(ramdiskVolume, (ramdiskVolume->volumeHeader->totalBlocks + ramdiskGrow) * ramdiskVolume->volumeHeader->blockSize);
 
 	firmwarePatches = (Dictionary*)getValueByKey(info, "RamdiskPatches");
 	if(firmwarePatches != NULL) {
