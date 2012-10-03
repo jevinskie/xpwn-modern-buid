@@ -432,6 +432,28 @@ int main(int argc, char* argv[]) {
 	XLOG(0, "growing ramdisk: %d -> %d\n", ramdiskVolume->volumeHeader->totalBlocks * ramdiskVolume->volumeHeader->blockSize, (ramdiskVolume->volumeHeader->totalBlocks + 4) * ramdiskVolume->volumeHeader->blockSize);
 	grow_hfs(ramdiskVolume, (ramdiskVolume->volumeHeader->totalBlocks + 4) * ramdiskVolume->volumeHeader->blockSize);
 
+	firmwarePatches = (Dictionary*)getValueByKey(info, "RamdiskPatches");
+	if(firmwarePatches != NULL) {
+		patchDict = (Dictionary*) firmwarePatches->values;
+		while(patchDict != NULL) {
+			fileValue = (StringValue*) getValueByKey(patchDict, "File");
+
+			patchValue = (StringValue*) getValueByKey(patchDict, "Patch");
+			if(patchValue) {
+				patchPath = (char*) malloc(sizeof(char) * (strlen(bundlePath) + strlen(patchValue->value) + 2));
+				strcpy(patchPath, bundlePath);
+				strcat(patchPath, "/");
+				strcat(patchPath, patchValue->value);
+
+				XLOG(0, "patching %s (%s)... ", fileValue->value, patchPath);
+				doPatchInPlace(ramdiskVolume, fileValue->value, patchPath);
+				free(patchPath);
+			}
+		
+			patchDict = (Dictionary*) patchDict->dValue.next;
+		}
+	}
+
 	if(doBootNeuter) {
 		firmwarePatches = (Dictionary*)getValueByKey(info, "BasebandPatches");
 		if(firmwarePatches != NULL) {
