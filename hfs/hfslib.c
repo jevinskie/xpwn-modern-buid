@@ -715,7 +715,7 @@ char* getLinkName(Volume* volume, HFSPlusCatalogFile* file) {
 		void *buffer = malloc(bufferSize);
 		AbstractFile* outFile = createAbstractFileFromMemory((void**)&buffer, bufferSize);
 		if (outFile) {
-			char zero;
+			char zero = 0;
 			writeToFile(file, outFile, volume);
 			outFile->write(outFile, &zero, sizeof(zero));
 			outFile->close(outFile);
@@ -727,8 +727,7 @@ char* getLinkName(Volume* volume, HFSPlusCatalogFile* file) {
 }
 
 void hfs_list(Volume* volume, const char *path) {
-	char* name;
-	HFSPlusCatalogRecord* record = getRecordFromPath(path, volume, &name, NULL);
+	HFSPlusCatalogRecord* record = getRecordFromPath(path, volume, NULL, NULL);
 	if(record != NULL && record->recordType == kHFSPlusFolderRecord) {
 		HFSCatalogNodeID folderID = ((HFSPlusCatalogFolder*)record)->folderID;
 
@@ -786,9 +785,9 @@ void hfs_list(Volume* volume, const char *path) {
 					printf(" -> %s", linkName);
 					free(linkName);
 				}
-				printf("\n", tmp);
+				printf("\n");
 		
-				if(list->record->recordType == kHFSPlusFolderRecord && ok) {
+				if(list->record->recordType == kHFSPlusFolderRecord) {
 					hfs_list(volume, tmp);
 				}
 			}
