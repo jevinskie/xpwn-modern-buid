@@ -191,6 +191,19 @@ BLKXTable* insertBLKX(AbstractFile* out, AbstractFile* in, uint32_t firstSectorN
 				
 				continue;
 			}
+
+			// at this point, we may have sectors to skip, but below threshold
+			if (sectorsToSkip >= SECTORS_AT_A_TIME) {
+				// we have read multiple times, we may need to clear the buffer
+				if (processed > sectorsToSkip) {
+					// the last read was not all-zero, clear it
+					memset(inBuffer, 0, amountRead);
+				}
+				// write one block as compressed zeroes. this is definitely quite dumb,
+				// because if we have multiple zero blocks in a row we will re-read and
+				// re-calculate zeroes then write them individually. but I don't care
+				amountRead = SECTORS_AT_A_TIME * SECTOR_SIZE;
+			}
 		}
 
 		printf("run %d: sectors=%" PRId64 ", left=%d\n", curRun, blkx->runs[curRun].sectorCount, numSectors);
