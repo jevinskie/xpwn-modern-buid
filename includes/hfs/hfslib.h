@@ -18,7 +18,7 @@ extern "C" {
 
 	void hfs_untar(Volume* volume, AbstractFile* tarFile);
 	void hfs_ls(Volume* volume, const char* path);
-	void hfs_list(Volume* volume, const char* path);
+	void hfs_list(Volume* volume, const char* path, int recursive);
 	void hfs_setsilence(int s);
 #ifdef __cplusplus
 }

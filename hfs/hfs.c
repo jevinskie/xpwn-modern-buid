@@ -16,17 +16,31 @@ char endianness;
 
 
 void cmd_ls(Volume* volume, int argc, const char *argv[]) {
-	if(argc > 1)
-		hfs_ls(volume, argv[1]);
-	else
-		hfs_ls(volume, "/");
-}
-
-void cmd_list(Volume* volume, int argc, const char *argv[]) {
-	if(argc > 1)
-		hfs_list(volume, argv[1]);
-	else
-		hfs_list(volume, "/");
+	int flags = 0;
+	const char *path = "/";
+	while (argc > 1) {
+		const char *p = argv[1];
+		if (*p == '-') {
+			int fl = 0;
+			while (*++p) switch (*p) {
+				case 'l': fl |= 1; break;
+				case 'R': fl |= 2; break;
+				default: fl = -1;
+			}
+			if (fl > 0) {
+				argc--;
+				argv++;
+				flags |= fl;
+				continue;
+			}
+		}
+		path = argv[1];
+		break;
+	}
+	if (flags)
+		hfs_list(volume, path, flags & 2);
+	else 
+		hfs_ls(volume, path);
 }
 
 void cmd_cat(Volume* volume, int argc, const char *argv[]) {
@@ -306,7 +320,7 @@ int main(int argc, const char *argv[]) {
 	TestByteOrder();
 	
 	if(argc < 3) {
-		printf("usage: %s <image-file> (-k <key>) <ls|list|cat|mv|symlink|mkdir|add|rm|chmod|extract|extractall|rmall|addall|grow|untar|getattr|debug> <arguments>\n", argv[0]);
+		printf("usage: %s <image-file> (-k <key>) <ls|cat|mv|symlink|mkdir|add|rm|chmod|extract|extractall|rmall|addall|grow|untar|getattr|debug> <arguments>\n", argv[0]);
 		return 0;
 	}
 	
@@ -335,8 +349,6 @@ int main(int argc, const char *argv[]) {
 	if(argc > 1) {
 		if(strcmp(argv[2], "ls") == 0) {
 			cmd_ls(volume, argc - 2, argv + 2);
-		} else if(strcmp(argv[2], "list") == 0) {
-			cmd_list(volume, argc - 2, argv + 2);
 		} else if(strcmp(argv[2], "cat") == 0) {
 			cmd_cat(volume, argc - 2, argv + 2);
 		} else if(strcmp(argv[2], "mv") == 0) {
