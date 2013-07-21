@@ -58,9 +58,10 @@ void writeUDIFID(AbstractFile* file, UDIFID* o) {
   FLIPENDIAN(o->data1); writeUInt32(file, o->data1); FLIPENDIAN(o->data1);
 }
 
-void readUDIFResourceFile(AbstractFile* file, UDIFResourceFile* o) {
+int readUDIFResourceFile(AbstractFile* file, UDIFResourceFile* o, int die) {
   o->fUDIFSignature = readUInt32(file);
   
+  if (!die && o->fUDIFSignature != 0x6B6F6C79) return -1;
   ASSERT(o->fUDIFSignature == 0x6B6F6C79, "readUDIFResourceFile - signature incorrect");
   
   o->fUDIFVersion = readUInt32(file);
@@ -92,6 +93,7 @@ void readUDIFResourceFile(AbstractFile* file, UDIFResourceFile* o) {
   o->reserved2 = readUInt32(file);
   o->reserved3 = readUInt32(file);
   o->reserved4 = readUInt32(file);
+  return 0;
 }
 
 void writeUDIFResourceFile(AbstractFile* file, UDIFResourceFile* o) {

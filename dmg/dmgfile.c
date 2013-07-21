@@ -147,6 +147,30 @@ static void closeDmgFile(io_func* io) {
 	free(io);
 }
 
+static int dmgFileReadPlain(io_func* io, off_t location, size_t size, void *buffer) {
+	DMG* dmg;
+	AbstractFile *file;
+
+	dmg = (DMG*) io->data;
+
+	if(size == 0) {
+		return TRUE;
+	}
+
+	file = dmg->dmg;
+
+	if (file->seek(file, location + dmg->offset)) {
+		return FALSE;
+	}
+
+	return (file->read(file, buffer, size) == size);
+}
+
+static int dmgFileWritePlain(io_func* io, off_t location, size_t size, void *buffer) {
+	fprintf(stderr, "Error: writing to DMGs is not supported.\n");
+	return FALSE;
+}
+
 io_func* openDmgFile(AbstractFile* abstractIn) {
 	off_t fileLength;
 	UDIFResourceFile resourceFile;
@@ -163,7 +187,24 @@ io_func* openDmgFile(AbstractFile* abstractIn) {
 	
 	fileLength = abstractIn->getLength(abstractIn);
 	abstractIn->seek(abstractIn, fileLength - sizeof(UDIFResourceFile));
-	readUDIFResourceFile(abstractIn, &resourceFile);
+	if (readUDIFResourceFile(abstractIn, &resourceFile, FALSE) != 0) {
+		// uncompressed dmg
+		dmg = (DMG*) malloc(sizeof(DMG));
+		dmg->dmg = abstractIn;
+		dmg->resources = NULL;
+		dmg->numBLKX = 0;
+		dmg->blkx = NULL;
+		dmg->runData = NULL;
+		dmg->runStart = 0;
+		dmg->runEnd = 0;
+		dmg->offset = 0;
+		toReturn = (io_func*) malloc(sizeof(io_func));
+		toReturn->data = dmg;
+		toReturn->read = &dmgFileReadPlain;
+		toReturn->write = &dmgFileWritePlain;
+		toReturn->close = &closeDmgFile; // yes, it is safe
+		return toReturn;
+	}
 	
 	dmg = (DMG*) malloc(sizeof(DMG));
 	dmg->dmg = abstractIn;
@@ -220,6 +261,16 @@ io_func* openDmgFilePartition(AbstractFile* abstractIn, int partition) {
 	toReturn->read(toReturn, 0, SECTOR_SIZE, ddmBuffer);
 	ddm = (DriverDescriptorRecord*) ddmBuffer;
 	flipDriverDescriptorRecord(ddm, FALSE);
+	if (ddm->sbSig != DRIVER_DESCRIPTOR_SIGNATURE) {
+		// no pmap
+		if (((DMG*)toReturn->data)->blkx == NULL) {
+			// no compression
+			free(toReturn->data);
+			free(toReturn);
+			toReturn = IOFuncFromAbstractFile(abstractIn);
+		}
+		return toReturn;
+	}
 	BlockSize = ddm->sbBlkSize;
 
 	partitions = (Partition*) malloc(BlockSize);

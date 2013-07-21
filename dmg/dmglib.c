@@ -13,7 +13,7 @@ int extractDmg(AbstractFile* abstractIn, AbstractFile* abstractOut, int partNum)
 		
 	fileLength = abstractIn->getLength(abstractIn);
 	abstractIn->seek(abstractIn, fileLength - sizeof(UDIFResourceFile));
-	readUDIFResourceFile(abstractIn, &resourceFile);
+	readUDIFResourceFile(abstractIn, &resourceFile, TRUE);
 	resources = readResources(abstractIn, &resourceFile);
 	
 	printf("Writing out data..\n"); fflush(stdout);
@@ -497,7 +497,7 @@ int convertToISO(AbstractFile* abstractIn, AbstractFile* abstractOut) {
 	
 	fileLength = abstractIn->getLength(abstractIn);
 	abstractIn->seek(abstractIn, fileLength - sizeof(UDIFResourceFile));
-	readUDIFResourceFile(abstractIn, &resourceFile);
+	readUDIFResourceFile(abstractIn, &resourceFile, TRUE);
 	resources = readResources(abstractIn, &resourceFile);
 
 	blkx = (getResourceByKey(resources, "blkx"))->data;

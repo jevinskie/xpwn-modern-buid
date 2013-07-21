@@ -296,7 +296,7 @@ extern "C" {
 	void writeUDIFChecksum(AbstractFile* file, UDIFChecksum* o);
 	void readUDIFID(AbstractFile* file, UDIFID* o);
 	void writeUDIFID(AbstractFile* file, UDIFID* o);
-	void readUDIFResourceFile(AbstractFile* file, UDIFResourceFile* o);
+	int readUDIFResourceFile(AbstractFile* file, UDIFResourceFile* o, int die);
 	void writeUDIFResourceFile(AbstractFile* file, UDIFResourceFile* o);
 
 	ResourceKey* readResources(AbstractFile* file, UDIFResourceFile* resourceFile);

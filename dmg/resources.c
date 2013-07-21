@@ -533,7 +533,7 @@ void outResources(AbstractFile* file, AbstractFile* out)
 
 	fileLength = file->getLength(file);
 	file->seek(file, fileLength - sizeof(UDIFResourceFile));
-	readUDIFResourceFile(file, &resourceFile);
+	readUDIFResourceFile(file, &resourceFile, TRUE);
 	xml = (char*) malloc((size_t)resourceFile.fUDIFXMLLength);
 	file->seek(file, (off_t)(resourceFile.fUDIFXMLOffset));
 	ASSERT(file->read(file, xml, (size_t)resourceFile.fUDIFXMLLength) == (size_t)resourceFile.fUDIFXMLLength, "fread");

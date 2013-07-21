@@ -4,6 +4,8 @@
 #include <string.h>
 #include <unistd.h>
 #include <hfs/hfsplus.h>
+#include <dmg/dmgfile.h>
+#include <dmg/filevault.h>
 #include <dirent.h>
 
 #include <hfs/hfslib.h>
@@ -299,15 +301,25 @@ void TestByteOrder()
 int main(int argc, const char *argv[]) {
 	io_func* io;
 	Volume* volume;
+	AbstractFile* image;
 	
 	TestByteOrder();
 	
 	if(argc < 3) {
-		printf("usage: %s <image-file> <ls|list|cat|mv|symlink|mkdir|add|rm|chmod|extract|extractall|rmall|addall|grow|untar|getattr|debug> <arguments>\n", argv[0]);
+		printf("usage: %s <image-file> (-k <key>) <ls|list|cat|mv|symlink|mkdir|add|rm|chmod|extract|extractall|rmall|addall|grow|untar|getattr|debug> <arguments>\n", argv[0]);
 		return 0;
 	}
 	
-	io = openFlatFile(argv[1]);
+	image = createAbstractFileFromFile(fopen(argv[1], "r+b"));
+	if(argc > 3 && strcmp(argv[2], "-k") == 0) {
+		AbstractFile *tmp = createAbstractFileFromFileVault(image, argv[3]);
+		if (tmp) {
+			image = tmp;
+		}
+		argc -= 2;
+		argv += 2;
+	}
+	io = openDmgFilePartition(image, -1);
 	if(io == NULL) {
 		fprintf(stderr, "error: Cannot open image-file.\n");
 		return 1;
