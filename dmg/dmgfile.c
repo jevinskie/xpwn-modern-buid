@@ -24,7 +24,6 @@ static void cacheRun(DMG* dmg, BLKXTable* blkx, int run) {
 	bufferSize = SECTOR_SIZE * blkx->runs[run].sectorCount;
 	
 	dmg->runData = (void*) malloc(bufferSize);
-	inBuffer = (void*) malloc(bufferSize);
 	memset(dmg->runData, 0, bufferSize);
 	
 	ASSERT(dmg->dmg->seek(dmg->dmg, blkx->dataStart + blkx->runs[run].compOffset) == 0, "fseeko");
@@ -37,6 +36,7 @@ static void cacheRun(DMG* dmg, BLKXTable* blkx, int run) {
 			strm.avail_in = 0;
 			strm.next_in = Z_NULL;
 			
+			inBuffer = (void*) malloc(bufferSize);
 			ASSERT(inflateInit(&strm) == Z_OK, "inflateInit");
 			
 			ASSERT((strm.avail_in = dmg->dmg->read(dmg->dmg, inBuffer, blkx->runs[run].compLength)) == blkx->runs[run].compLength, "fread");
@@ -53,6 +53,7 @@ static void cacheRun(DMG* dmg, BLKXTable* blkx, int run) {
 			} while (strm.avail_out == 0);
 			
 			ASSERT(inflateEnd(&strm) == Z_OK, "inflateEnd");
+			free(inBuffer);
 			break;
 		case BLOCK_RAW:
 			ASSERT((have = dmg->dmg->read(dmg->dmg, dmg->runData, blkx->runs[run].compLength)) == blkx->runs[run].compLength, "fread");
