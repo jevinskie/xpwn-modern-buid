@@ -168,6 +168,11 @@ BLKXTable* insertBLKX(AbstractFile* out, AbstractFile* in, uint32_t firstSectorN
 					numSectors -= blkx->runs[curRun].sectorCount;
 
 					curRun++;
+
+					if(curRun >= roomForRuns) {
+						roomForRuns <<= 1;
+						blkx = (BLKXTable*) realloc(blkx, sizeof(BLKXTable) + (roomForRuns * sizeof(BLKXRun)));
+					}
 				}
 
 				if(remainder > 0)
@@ -185,6 +190,11 @@ BLKXTable* insertBLKX(AbstractFile* out, AbstractFile* in, uint32_t firstSectorN
 					numSectors -= blkx->runs[curRun].sectorCount;
 
 					curRun++;
+
+					if(curRun >= roomForRuns) {
+						roomForRuns <<= 1;
+						blkx = (BLKXTable*) realloc(blkx, sizeof(BLKXTable) + (roomForRuns * sizeof(BLKXRun)));
+					}
 				}
 
 				IGNORE_THRESHOLD = 0;
