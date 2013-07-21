@@ -132,6 +132,23 @@ void writeToHFSFile(HFSPlusCatalogFile* file, AbstractFile* input, Volume* volum
 	free(buffer);
 }
 
+char* getLinkName(Volume* volume, HFSPlusCatalogFile* file) {
+	if ((file->permissions.fileMode & 0170000) == 0120000) {
+		size_t bufferSize = 32;
+		void *buffer = malloc(bufferSize);
+		AbstractFile* outFile = createAbstractFileFromMemory((void**)&buffer, bufferSize);
+		if (outFile) {
+			char zero = 0;
+			writeToFile(file, outFile, volume);
+			outFile->write(outFile, &zero, sizeof(zero));
+			outFile->close(outFile);
+			return buffer;
+		}
+		free(buffer);
+	}
+	return NULL;
+}
+
 void get_hfs(Volume* volume, const char* inFileName, AbstractFile* output) {
 	HFSPlusCatalogRecord* record;
 	
@@ -437,14 +454,27 @@ void extractAllInFolder(HFSCatalogNodeID folderID, Volume* volume) {
 			extractAllInFolder(folder->folderID, volume);
 			ASSERT(chdir(cwd) == 0, "chdir");
 		} else if(list->record->recordType == kHFSPlusFileRecord) {
-			printf("file: %s\n", name);
+			char *linkName;
 			file = (HFSPlusCatalogFile*)list->record;
-			outFile = createAbstractFileFromFile(fopen(name, "wb"));
-			if(outFile != NULL) {
-				writeToFile(file, outFile, volume);
-				outFile->close(outFile);
-			} else {
-				printf("WARNING: cannot fopen %s\n", name);
+#ifndef WIN32
+			linkName = getLinkName(volume, file);
+			if (linkName) {
+				printf("link: %s -> %s\n", name, linkName);
+				if (symlink(linkName, name)) {
+					printf("WARNING: cannot link %s\n", name);
+				}
+				free(linkName);
+			} else
+#endif
+			{
+				printf("file: %s\n", name);
+				outFile = createAbstractFileFromFile(fopen(name, "wb"));
+				if(outFile != NULL) {
+					writeToFile(file, outFile, volume);
+					outFile->close(outFile);
+				} else {
+					printf("WARNING: cannot fopen %s\n", name);
+				}
 			}
 		}
 		
@@ -710,23 +740,6 @@ void printPerm(uint16_t fileMode) {
 	}
 
 	printf(" ");
-}
-
-char* getLinkName(Volume* volume, HFSPlusCatalogFile* file) {
-	if ((file->permissions.fileMode & 0170000) == 0120000) {
-		size_t bufferSize = 32;
-		void *buffer = malloc(bufferSize);
-		AbstractFile* outFile = createAbstractFileFromMemory((void**)&buffer, bufferSize);
-		if (outFile) {
-			char zero = 0;
-			writeToFile(file, outFile, volume);
-			outFile->write(outFile, &zero, sizeof(zero));
-			outFile->close(outFile);
-			return buffer;
-		}
-		free(buffer);
-	}
-	return NULL;
 }
 
 void hfs_list(Volume* volume, const char *path) {
