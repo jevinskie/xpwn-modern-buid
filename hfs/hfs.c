@@ -51,13 +51,21 @@ void cmd_cat(Volume* volume, int argc, const char *argv[]) {
 void cmd_extract(Volume* volume, int argc, const char *argv[]) {
 	HFSPlusCatalogRecord* record;
 	AbstractFile *outFile;
+	const char *outName;
 	
 	if(argc < 3) {
+		if (argc == 2) {
+			char *p = strrchr(argv[1], '/');
+			outName = p ? ++p : argv[1];
+			goto do_extract;
+		}
 		printf("Not enough arguments");
 		return;
 	}
+	outName = argv[2];
+do_extract:
 	
-	outFile = createAbstractFileFromFile(fopen(argv[2], "wb"));
+	outFile = createAbstractFileFromFile(fopen(outName, "wb"));
 	
 	if(outFile == NULL) {
 		printf("cannot create file");
