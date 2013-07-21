@@ -500,7 +500,7 @@ HFSPlusCatalogRecord* getRecordFromPath(const char* path, Volume* volume, char *
 }
 
 HFSPlusCatalogRecord* getRecordFromPath2(const char* path, Volume* volume, char **name, HFSPlusCatalogKey* retKey, char traverse) {
-	return getRecordFromPath3(path, volume, name, retKey, TRUE, TRUE, kHFSRootFolderID);
+	return getRecordFromPath3(path, volume, name, retKey, traverse, TRUE, kHFSRootFolderID);
 }
 
 HFSPlusCatalogRecord* getRecordFromPath3(const char* path, Volume* volume, char **name, HFSPlusCatalogKey* retKey, char traverse, char returnLink, HFSCatalogNodeID parentID) {
