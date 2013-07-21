@@ -656,7 +656,7 @@ void hfs_ls(Volume* volume, const char* path) {
 	HFSPlusCatalogRecord* record;
 	char* name;
 
-	record = getRecordFromPath(path, volume, &name, NULL);
+	record = getRecordFromPath2(path, volume, &name, NULL, FALSE);
 	
 	printf("%s: \n", name);
 	if(record != NULL) {
