@@ -122,6 +122,8 @@ static void closeHFSPlusCompressed(io_func* io) {
 		CLOSE(data->io);
 
 	if(data->dirty) {
+		int oldSize = data->decmpfsSize;
+
 		if(data->blocks)
 			free(data->blocks);
 
@@ -153,9 +155,15 @@ static void closeHFSPlusCompressed(io_func* io) {
 			// check if we can fit the whole thing into an inline extended attribute
 			// a little fudge factor here since sizeof(HFSPlusAttrKey) is bigger than it ought to be, since only 127 characters are strictly allowed
 			if(numBlocks <= 1 && (actualSize + sizeof(HFSPlusDecmpfs) + sizeof(HFSPlusAttrKey)) <= 0x1000) {
+				int newSize = (sizeof(HFSPlusDecmpfs) + actualSize + 1) & ~1;
+				if (oldSize < newSize) {
+					printf("growing ");
+					data->decmpfs = realloc(data->decmpfs, newSize);
+					memset(data->decmpfs->data + actualSize, 0, newSize - actualSize - sizeof(HFSPlusDecmpfs));
+				}
 				data->decmpfs->flags = 0x3;
 				memcpy(data->decmpfs->data, buffer, actualSize);
-				data->decmpfsSize = sizeof(HFSPlusDecmpfs) + actualSize;
+				data->decmpfsSize = newSize;
 				printf("inline data\n");
 				break;
 			} else {

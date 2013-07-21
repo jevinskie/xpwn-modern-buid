@@ -90,6 +90,9 @@ void writeToHFSFile(HFSPlusCatalogFile* file, AbstractFile* input, Volume* volum
 			free(buffer);
 			return;
 		}
+		if (((HFSPlusCompressed *)io->data)->decmpfs->size > bytesLeft) {
+			((HFSPlusCompressed *)io->data)->decmpfs->size = bytesLeft; /* XXX Probably a bad idea: truncate */
+		}
 	} else {
 		io = openRawFile(file->fileID, &file->dataFork, (HFSPlusCatalogRecord*)file, volume);
 		if(io == NULL) {
