@@ -874,7 +874,6 @@ int removeFile(const char* fileName, Volume* volume) {
 
 		return TRUE;
 	} else {
-		free(parentFolder);
 		ASSERT(FALSE, "cannot find record");
 		return FALSE;
 	}
