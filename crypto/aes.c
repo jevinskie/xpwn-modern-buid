@@ -70,6 +70,9 @@ IOReturn doAES(io_connect_t conn, void* inbuf, void *outbuf, uint32_t size, IOAE
 		memset(in.iv, 0, 16);
 
 	IOByteCount inSize = sizeof(in);
+	if (kCFCoreFoundationVersionNumber < 550.38) {
+		inSize -= sizeof(in.wtf0);
+	}
 
 	return IOConnectCallStructMethod(conn, kIOAESAcceleratorTask, &in, inSize, &in, &inSize);
 }
