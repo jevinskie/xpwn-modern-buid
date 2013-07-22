@@ -82,6 +82,11 @@ void releaseArray(ArrayValue* myself) {
 				break;
 			case StringType:
 				free(((StringValue*)(myself->values[i]))->value);
+				free(myself->values[i]->key);
+				free(myself->values[i]);
+				break;
+			case DataType:
+				free(((DataValue*)(myself->values[i]))->value);
 			case BoolType:
 			case IntegerType:
 				free(myself->values[i]->key);
@@ -112,6 +117,11 @@ void releaseDictionary(Dictionary* myself) {
 				break;
 			case StringType:
 				free(((StringValue*)(toRelease))->value);
+				free(toRelease->key);
+				free(toRelease);
+				break;
+			case DataType:
+				free(((DataValue*)(toRelease))->value);
 			case IntegerType:
 			case BoolType:
 				free(toRelease->key);
@@ -152,7 +162,7 @@ void createArray(ArrayValue* myself, char* xml) {
 			strcpy(((StringValue*)curValue)->value, valueTag->xml);
 		} else if(strcmp(valueTag->name, "data") == 0) {
 			size_t len;
-			curValue->type = StringType;
+			curValue->type = DataType;
 			curValue = (DictValue*) realloc(curValue, sizeof(DataValue));
 			((DataValue*)curValue)->value = decodeBase64(valueTag->xml, &len);
 			((DataValue*)curValue)->len = len;
@@ -266,7 +276,7 @@ void createDictionary(Dictionary* myself, char* xml) {
 			strcpy(((StringValue*)curValue)->value, valueTag->xml);
 		} else if(strcmp(valueTag->name, "data") == 0) {
 			size_t len;
-			curValue->type = StringType;
+			curValue->type = DataType;
 			curValue = (DictValue*) realloc(curValue, sizeof(DataValue));
 			((DataValue*)curValue)->value = decodeBase64(valueTag->xml, &len);
 			((DataValue*)curValue)->len = len;
@@ -468,6 +478,9 @@ Dictionary* createRoot(char* xml) {
 	xml = strstr(xml, "<dict>");
 	tag = getNextTag(&xml);
 	dict = malloc(sizeof(Dictionary));
+	if(dict == NULL) {
+		return NULL;
+	}
 	dict->dValue.next = NULL;
 	dict->dValue.key = malloc(sizeof("root"));
 	strcpy(dict->dValue.key, "root");
