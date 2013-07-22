@@ -419,7 +419,7 @@ int download(AbstractFile* file, unsigned int transfer_size, int final_reset)
 			fprintf(stderr, "Can't find the single available DFU IF\n");
 			exit(1);
 		}
-	} else if (num_ifs > 1 && !dif->flags & (DFU_IFF_IFACE|DFU_IFF_ALT)) {
+	} else if (num_ifs > 1 && !(dif->flags & (DFU_IFF_IFACE|DFU_IFF_ALT))) {
 		fprintf(stderr, "We have %u DFU Interfaces/Altsettings, "
 			"you have to specify one via --intf / --alt options\n",
 			num_ifs);
