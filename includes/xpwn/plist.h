@@ -5,6 +5,7 @@ enum DictTypes {
 	DictionaryType = 1,
 	ArrayType,
 	StringType,
+	DataType,
 	IntegerType,
 	BoolType
 };
@@ -20,6 +21,12 @@ typedef struct StringValue {
 	DictValue dValue;
 	char* value;
 } StringValue;
+
+typedef struct DataValue {
+	DictValue dValue;
+	int len;
+	unsigned char* value;
+} DataValue;
 
 typedef struct IntegerValue {
 	DictValue dValue;
@@ -57,7 +64,6 @@ extern "C" {
 	char* getXmlFromArrayValue(ArrayValue* myself, int tabsCount);
 	char* getXmlFromDictionary(Dictionary* myself, int tabsCount);
 	Dictionary* createRoot(char* xml);
-	char* getXmlFromRoot(Dictionary* root);
 	char* getXmlFromRoot(Dictionary* root);
 	DictValue* getValueByKey(Dictionary* myself, const char* key);
 	void addStringToArray(ArrayValue* array, char* str);
