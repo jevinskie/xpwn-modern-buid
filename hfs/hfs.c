@@ -162,6 +162,16 @@ void cmd_chmod(Volume* volume, int argc, const char *argv[]) {
 	}
 }
 
+void cmd_chown(Volume* volume, int argc, const char *argv[]) {
+	uint32_t uid, gid;
+	
+	if(argc > 2 && sscanf(argv[1], "%u:%u", &uid, &gid) == 2) {
+		chownFile(argv[2], uid, gid, volume);
+	} else {
+		printf("usage: chown uid:gid path\n");
+	}
+}
+
 void cmd_extractall(Volume* volume, int argc, const char *argv[]) {
 	HFSPlusCatalogRecord* record;
 	char cwd[1024];
@@ -320,7 +330,7 @@ int main(int argc, const char *argv[]) {
 	TestByteOrder();
 	
 	if(argc < 3) {
-		printf("usage: %s <image-file> (-k <key>) <ls|cat|mv|symlink|mkdir|add|rm|chmod|extract|extractall|rmall|addall|grow|untar|getattr|debug> <arguments>\n", argv[0]);
+		printf("usage: %s <image-file> (-k <key>) <ls|cat|mv|symlink|mkdir|add|rm|chmod|chown|extract|extractall|rmall|addall|grow|untar|getattr|debug> <arguments>\n", argv[0]);
 		return 0;
 	}
 	
@@ -363,6 +373,8 @@ int main(int argc, const char *argv[]) {
 			cmd_rm(volume, argc - 2, argv + 2);
 		} else if(strcmp(argv[2], "chmod") == 0) {
 			cmd_chmod(volume, argc - 2, argv + 2);
+		} else if(strcmp(argv[2], "chown") == 0) {
+			cmd_chown(volume, argc - 2, argv + 2);
 		} else if(strcmp(argv[2], "extract") == 0) {
 			cmd_extract(volume, argc - 2, argv + 2);
 		} else if(strcmp(argv[2], "extractall") == 0) {
