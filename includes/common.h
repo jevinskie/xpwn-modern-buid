@@ -30,7 +30,7 @@
 #define APPLE_TO_UNIX_TIME(x) ((x) - TIME_OFFSET_FROM_UNIX)
 #define UNIX_TO_APPLE_TIME(x) ((x) + TIME_OFFSET_FROM_UNIX)
 
-#define ASSERT(x, m) if(!(x)) { fflush(stdout); fprintf(stderr, "error: %s\n", m); perror("error"); fflush(stderr); exit(1); }
+#define ASSERT(x, m) if(!(x)) { fflush(stdout); fprintf(stderr, "error: %s:%d: %s\n", __FILE__, __LINE__, m); perror("error"); fflush(stderr); exit(1); }
 
 extern char endianness;
 
