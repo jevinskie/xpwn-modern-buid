@@ -364,6 +364,7 @@ void writeImg3Root(AbstractFile* file, Img3Element* element, Img3Info* info) {
 	AppleImg3RootHeader* header;
 	Img3Element* current;
 	off_t curPos;
+	int shsh = 0;
 
 	curPos = file->tell(file);
 	curPos -= sizeof(AppleImg3Header);
@@ -376,6 +377,7 @@ void writeImg3Root(AbstractFile* file, Img3Element* element, Img3Info* info) {
 	while(current != NULL) {
 		if(current->header->magic == IMG3_SHSH_MAGIC) {
 			header->extra.shshOffset = (uint32_t)(file->tell(file) - sizeof(AppleImg3RootHeader));
+			shsh = 1;
 		}
 
 		if(current->header->magic != IMG3_KBAG_MAGIC || info->encrypted)
@@ -388,6 +390,9 @@ void writeImg3Root(AbstractFile* file, Img3Element* element, Img3Info* info) {
 
 	header->base.dataSize = file->tell(file) - (curPos + sizeof(AppleImg3RootHeader));
 	header->base.size = sizeof(AppleImg3RootHeader) + header->base.dataSize;
+	if (!shsh) {
+		header->extra.shshOffset = 0;
+	}
 
 	file->seek(file, curPos);
 
