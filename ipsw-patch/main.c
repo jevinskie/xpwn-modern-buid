@@ -13,6 +13,7 @@
 #include <dmg/dmglib.h>
 #include <xpwn/pwnutil.h>
 #include <stdio.h>
+#include <unistd.h>
 
 #ifdef WIN32
 #include <windows.h>
@@ -89,6 +90,10 @@ int main(int argc, char* argv[]) {
 	io_func* ramdiskFS;
 	Volume* ramdiskVolume;
 	size_t ramdiskGrow = 0;
+
+	Dictionary* manifest = NULL;
+	AbstractFile *manifestFile;
+	char manifestDirty = FALSE;
 
 	char* updateRamdiskFSPathInIPSW = NULL; 
 
@@ -274,6 +279,16 @@ int main(int argc, char* argv[]) {
 	}
 	free(toRemove);
 
+	manifestFile = getFileFromOutputState(&outputState, "BuildManifest.plist");
+	if (manifestFile) {
+		size_t fileLength = manifestFile->getLength(manifestFile);
+		char *plist = malloc(fileLength);
+		manifestFile->read(manifestFile, plist, fileLength);
+		manifestFile->close(manifestFile);
+		manifest = createRoot(plist);
+		free(plist);
+	}
+
 	firmwarePatches = (Dictionary*)getValueByKey(info, "FirmwarePatches");
 	patchDict = (Dictionary*) firmwarePatches->values;
 	while(patchDict != NULL) {
@@ -349,7 +364,50 @@ int main(int argc, char* argv[]) {
 			addToOutput(&outputState, fileValue->value, imageBuffer, imageSize);
 		}
 		
+		BoolValue *decryptValue = (BoolValue *)getValueByKey(patchDict, "Decrypt");
+		StringValue *decryptPathValue = (StringValue*) getValueByKey(patchDict, "DecryptPath");
+		if ((decryptValue && decryptValue->value) || decryptPathValue) {
+			XLOG(0, "%s: ", patchDict->dValue.key); fflush(stdout);
+			doDecrypt(decryptPathValue, fileValue, bundlePath, &outputState, pKey, pIV, useMemory);
+			if(strcmp(patchDict->dValue.key, "Restore Ramdisk") == 0) {
+				pRamdiskKey = NULL;
+				pRamdiskIV = NULL;
+			}
+			if (decryptPathValue  && manifest) {
+				ArrayValue *buildIdentities = (ArrayValue *)getValueByKey(manifest, "BuildIdentities");
+				if (buildIdentities) {
+					for (i = 0; i < buildIdentities->size; i++) {
+						StringValue *path;
+						Dictionary *dict = (Dictionary *)buildIdentities->values[i];
+						if (!dict) continue;
+						dict = (Dictionary *)getValueByKey(dict, "Manifest");
+						if (!dict) continue;
+						dict = (Dictionary *)getValueByKey(dict, patchDict->dValue.key);
+						if (!dict) continue;
+						dict = (Dictionary *)getValueByKey(dict, "Info");
+						if (!dict) continue;
+						path = (StringValue *)getValueByKey(dict, "Path");
+						if (!path) continue;
+						free(path->value);
+						path->value = strdup(decryptPathValue->value);
+						manifestDirty = TRUE;
+					}
+				}
+			}
+		}
+		
 		patchDict = (Dictionary*) patchDict->dValue.next;
+	}
+
+	if (manifestDirty && manifest) {
+		manifestFile = getFileFromOutputStateForReplace(&outputState, "BuildManifest.plist");
+		if (manifestFile) {
+			char *plist = getXmlFromRoot(manifest);
+			manifestFile->write(manifestFile, plist, strlen(plist));
+			manifestFile->close(manifestFile);
+			free(plist);
+		}
+		releaseDictionary(manifest);
 	}
 
 	fileValue = (StringValue*) getValueByKey(info, "RootFilesystem");
