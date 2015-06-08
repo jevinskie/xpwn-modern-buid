@@ -92,13 +92,19 @@ target_link_libraries(xpwntool xpwn)
 add_executable(imagetool imagetool.c)
 target_link_libraries(imagetool xpwn)
 
+add_executable(validate validate.c)
+target_link_libraries(validate xpwn)
+
+add_executable(ticket ticket.c)
+target_link_libraries(ticket xpwn)
+
 IF(WIN32)
 	ADD_EXECUTABLE(itunespwn itunespwn.c)
 	TARGET_LINK_LIBRARIES(itunespwn xpwn gdi32)
 	install(TARGETS itunespwn RUNTIME DESTINATION .)
 ENDIF(WIN32)
 
-install(TARGETS ipsw xpwntool RUNTIME DESTINATION .)
+install(TARGETS ipsw xpwntool validate ticket RUNTIME DESTINATION .)
 install(DIRECTORY FirmwareBundles/ DESTINATION FirmwareBundles)
 install(DIRECTORY bundles/ DESTINATION bundles)
 
