@@ -7,6 +7,7 @@
 #include <xpwn/outputstate.h>
 #include <zip.h>
 #include <unzip.h>
+#include <fnmatch.h>
 
 #ifdef WIN32
 #include <windows.h>
