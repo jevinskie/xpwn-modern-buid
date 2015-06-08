@@ -511,9 +511,9 @@ int main(int argc, char* argv[]) {
 	if(updateRamdiskFSPathInIPSW)
 		removeFileFromOutputState(&outputState, updateRamdiskFSPathInIPSW, TRUE);
 
-	BoolValue *removeBB = (BoolValue*) getValueByKey(info, "DeleteBaseband");
-	if (removeBB && removeBB->value)
-		removeFileFromOutputState(&outputState, "Firmware/ICE*", FALSE);
+	StringValue *removeBB = (StringValue*) getValueByKey(info, "DeleteBaseband");
+	if (removeBB && removeBB->value[0])
+		removeFileFromOutputState(&outputState, removeBB->value, FALSE);
 
 	closeVolume(rootVolume);
 	CLOSE(rootFS);

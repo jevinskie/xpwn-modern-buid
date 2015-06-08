@@ -106,7 +106,7 @@
 		<string>org.ultrasn0w.unlock</string>
 	</array>
 	<key>DeleteBaseband</key>
-	<true/>
+	<string>Firmware/ICE*</string>
 	<key>RamdiskMountVolume</key>
 	<string>ramdisk</string>
 	<key>RamdiskOptionsPath</key>
