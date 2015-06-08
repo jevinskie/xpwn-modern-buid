@@ -208,6 +208,74 @@ int doPatch(StringValue* patchValue, StringValue* fileValue, const char* bundleP
 	return 0;
 }
 
+int doDecrypt(StringValue* decryptValue, StringValue* fileValue, const char* bundlePath, OutputState** state, unsigned int* key, unsigned int* iv, int useMemory) {
+	size_t bufferSize;
+	void* buffer;
+	
+	AbstractFile* file;
+	AbstractFile* out;
+	AbstractFile* outRaw;
+
+	char* tmpFileName;
+
+	if(useMemory) {
+		bufferSize = 0;
+		buffer = malloc(1);
+		outRaw = createAbstractFileFromMemoryFile((void**)&buffer, &bufferSize);
+	} else {
+		tmpFileName = createTempFile();
+		outRaw = createAbstractFileFromFile(fopen(tmpFileName, "wb"));
+	}
+
+	out = duplicateAbstractFile(getFileFromOutputState(state, fileValue->value), outRaw);
+	file = openAbstractFile3(getFileFromOutputState(state, fileValue->value), key, iv, 0);
+	
+	if(!file || !out) {
+		XLOG(0, "file error\n");
+		exit(0);
+	}
+
+	char *buf = malloc(1024 * 1024);
+	off_t inDataSize = file->getLength(file);
+	while (inDataSize > 0) {
+		off_t avail, chunk = 1024 * 1024;
+		if (chunk > inDataSize) {
+			chunk = inDataSize;
+		}
+		if (chunk < 0) {
+			XLOG(0, "decrypt failed\n");
+			exit(0);
+		}
+		avail = file->read(file, buf, chunk);
+		out->write(out, buf, avail);
+		if (avail < chunk) {
+			break;
+		}
+		inDataSize -= chunk;
+	}
+	out->close(out);
+	file->close(file);
+	free(buf);
+
+	XLOG(0, "writing... "); fflush(stdout);
+	
+	if (decryptValue) {
+		fileValue = decryptValue;
+	}
+	if(useMemory) {
+		addToOutput(state, fileValue->value, buffer, bufferSize);
+	} else {
+		outRaw = createAbstractFileFromFile(fopen(tmpFileName, "rb"));
+		size_t length = outRaw->getLength(outRaw);
+		outRaw->close(outRaw);
+		addToOutput2(state, fileValue->value, NULL, length, tmpFileName);
+	}
+
+	XLOG(0, "success\n"); fflush(stdout);
+
+	return 0;
+}
+
 void doPatchInPlace(Volume* volume, const char* filePath, const char* patchPath) {
 	void* buffer;
 	void* buffer2;
