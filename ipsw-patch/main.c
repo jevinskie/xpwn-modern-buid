@@ -427,7 +427,7 @@ int main(int argc, char* argv[]) {
 			closeRoot(buffer);
 			exit(0);
 		}
-		hfs_untar(rootVolume, tarFile);
+		if (tarFile->getLength(tarFile)) hfs_untar(rootVolume, tarFile);
 		tarFile->close(tarFile);
 	}
 	
