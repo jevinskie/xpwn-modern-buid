@@ -4,6 +4,8 @@ IF(NOT ZLIB_FOUND)
 	message(FATAL_ERROR "zlib is required for libminizip!")
 ENDIF(NOT ZLIB_FOUND)
 
+add_definitions( -DNOCRYPT -DNOUNCRYPT )
+
 include_directories(${ZLIB_INCLUDE_DIR})
 link_directories(${ZLIB_LIBRARIES})
 
