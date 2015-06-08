@@ -241,6 +241,7 @@ void createDictionary(Dictionary* myself, char* xml) {
 	
 	curValue = NULL;
 	lastValue = NULL;
+	myself->values = NULL;
 	
 	while(*xml != '\0') {
 		keyTag = getNextTag(&xml);
@@ -265,7 +266,7 @@ void createDictionary(Dictionary* myself, char* xml) {
 			break;
 		}
 		
-		if(strcmp(valueTag->name, "dict") == 0) {
+		if(strcmp(valueTag->name, "dict") == 0 || strcmp(valueTag->name, "dict/") == 0) {
 			curValue->type = DictionaryType;
 			curValue = (DictValue*) realloc(curValue, sizeof(Dictionary));
 			createDictionary((Dictionary*) curValue, valueTag->xml);
@@ -284,7 +285,7 @@ void createDictionary(Dictionary* myself, char* xml) {
 			curValue->type = IntegerType;
 			curValue = (DictValue*) realloc(curValue, sizeof(IntegerValue));
 			sscanf(valueTag->xml, "%d", &(((IntegerValue*)curValue)->value));
-		} else if(strcmp(valueTag->name, "array") == 0) {
+		} else if(strcmp(valueTag->name, "array") == 0 || strcmp(valueTag->name, "array/") == 0) {
 			curValue->type = ArrayType;
 			curValue = (DictValue*) realloc(curValue, sizeof(ArrayValue));
 			createArray((ArrayValue*) curValue, valueTag->xml);
@@ -346,13 +347,17 @@ char* getXmlFromArrayValue(ArrayValue* myself, int tabsCount) {
 			toReturn = realloc(toReturn, toReturnSize);
 			toReturn = strcat(toReturn, buffer);
 		} else if(curValue->type == DataType) {
-			char* base64 = convertBase64(((DataValue*)curValue)->value, ((DataValue*)curValue)->len, 0, -1);
-			sprintf(buffer, "%s\t<data>", tabs);
+			int chunk = 68 - tabsCount * 8;
+			if (chunk < 8) {
+				chunk = 8;
+			}
+			char* base64 = convertBase64(((DataValue*)curValue)->value, ((DataValue*)curValue)->len, tabsCount + 1, chunk - 1);
+			sprintf(buffer, "%s\t<data>\n", tabs);
 			toReturnSize += sizeof(char) * (strlen(buffer) + strlen(base64) + 1);
 			toReturn = realloc(toReturn, toReturnSize);
 			toReturn = strcat(toReturn, buffer);
 			toReturn = strcat(toReturn, base64);
-			sprintf(buffer, "</data>\n");
+			sprintf(buffer, "%s\t</data>\n", tabs);
 			toReturnSize += sizeof(char) * (strlen(buffer) + 1);
 			toReturn = realloc(toReturn, toReturnSize);
 			toReturn = strcat(toReturn, buffer);
@@ -427,13 +432,17 @@ char* getXmlFromDictionary(Dictionary* myself, int tabsCount) {
 			toReturn = realloc(toReturn, toReturnSize);
 			toReturn = strcat(toReturn, buffer);
 		} else if(curValue->type == DataType) {
-			char* base64 = convertBase64(((DataValue*)curValue)->value, ((DataValue*)curValue)->len, 0, -1);
-			sprintf(buffer, "%s\t<data>", tabs);
+			int chunk = 68 - tabsCount * 8;
+			if (chunk < 8) {
+				chunk = 8;
+			}
+			char* base64 = convertBase64(((DataValue*)curValue)->value, ((DataValue*)curValue)->len, tabsCount + 1, chunk - 1);
+			sprintf(buffer, "%s\t<data>\n", tabs);
 			toReturnSize += sizeof(char) * (strlen(buffer) + strlen(base64) + 1);
 			toReturn = realloc(toReturn, toReturnSize);
 			toReturn = strcat(toReturn, buffer);
 			toReturn = strcat(toReturn, base64);
-			sprintf(buffer, "</data>\n");
+			sprintf(buffer, "%s\t</data>\n", tabs);
 			toReturnSize += sizeof(char) * (strlen(buffer) + 1);
 			toReturn = realloc(toReturn, toReturnSize);
 			toReturn = strcat(toReturn, buffer);
@@ -476,15 +485,21 @@ Dictionary* createRoot(char* xml) {
 	Dictionary* dict;
 	
 	xml = strstr(xml, "<dict>");
+	if(xml == NULL) {
+		return NULL;
+	}
 	tag = getNextTag(&xml);
+	if(tag == NULL) {
+		return NULL;
+	}
 	dict = malloc(sizeof(Dictionary));
 	if(dict == NULL) {
 		return NULL;
 	}
+	dict->dValue.type = DictionaryType;
 	dict->dValue.next = NULL;
 	dict->dValue.key = malloc(sizeof("root"));
 	strcpy(dict->dValue.key, "root");
-	dict->values = NULL;
 	createDictionary(dict, tag->xml);
 	releaseTag(tag);
 	return dict;
