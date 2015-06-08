@@ -846,6 +846,8 @@ void hfs_untar(Volume* volume, AbstractFile* tarFile) {
 	size_t tarSize = tarFile->getLength(tarFile);
 	size_t curRecord = 0;
 	char block[512];
+	char *longName = NULL;
+	char *longLink = NULL;
 
 	while(curRecord < tarSize) {
 		tarFile->seek(tarFile, curRecord);
@@ -866,6 +868,23 @@ void hfs_untar(Volume* volume, AbstractFile* tarFile) {
 		sscanf(&block[124], "%o", &size);
 		sscanf(&block[108], "%o", &uid);
 		sscanf(&block[116], "%o", &gid);
+
+		if (block[156] == 'L') {
+			longName = malloc(size);
+			tarFile->seek(tarFile, curRecord + 512);
+			tarFile->read(tarFile, longName, size);
+			goto loop;
+		}
+		if (block[156] == 'K') {
+			longLink = malloc(size);
+			tarFile->seek(tarFile, curRecord + 512);
+			tarFile->read(tarFile, longLink, size);
+			goto loop;
+		}
+		if (longName)
+			fileName = longName;
+		if (longLink)
+			target = longLink;
 
 		if(fileName[0] == '\0')
 			break;
@@ -915,6 +934,10 @@ void hfs_untar(Volume* volume, AbstractFile* tarFile) {
 
 		chmodFile(fileName, mode, volume);
 		chownFile(fileName, uid, gid, volume);
+		free(longName);
+		longName = NULL;
+		free(longLink);
+		longLink = NULL;
 
 loop:
 
