@@ -574,6 +574,8 @@ int main(int argc, char* argv[]) {
 				printf("ERROR: no digest for %s (%s) and no blob found\n", centry->key, centry->path);
 				error = 1;
 			}
+		} else {
+			VERBOSE("INFO: %s (%s) is signed by APTicket%s\n", centry->key, centry->path, centry->blob ? " and blob" : "");
 		}
 	}
 	free(array);
