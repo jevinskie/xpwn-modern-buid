@@ -948,7 +948,7 @@ HFSCatalogNodeID newFolder(const char* pathName, Volume* volume) {
   if(parentFolder == NULL || parentFolder->recordType != kHFSPlusFolderRecord) {
     free(path);
     free(parentFolder);
-    return FALSE;
+    return 0;
   }
   
   newFolderID = volume->volumeHeader->nextCatalogID++;
