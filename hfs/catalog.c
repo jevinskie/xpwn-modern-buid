@@ -943,6 +943,12 @@ HFSCatalogNodeID newFolder(const char* pathName, Volume* volume) {
     name = lastSeparator + 1;
     *lastSeparator = '\0';
     parentFolder = (HFSPlusCatalogFolder*) getRecordFromPath(path, volume, NULL, NULL);  
+    if(parentFolder == NULL) {
+      /* try to create parent now */
+      if (newFolder(path, volume)) {
+        parentFolder = (HFSPlusCatalogFolder*) getRecordFromPath(path, volume, NULL, NULL);  
+      }
+    }
   }
 
   if(parentFolder == NULL || parentFolder->recordType != kHFSPlusFolderRecord) {
