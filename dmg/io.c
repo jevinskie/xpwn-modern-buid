@@ -175,7 +175,7 @@ BLKXTable* insertBLKX(AbstractFile* out, AbstractFile* in, uint32_t firstSectorN
 					blkx->runs[curRun].compOffset = out->tell(out) - blkx->dataStart;
 					blkx->runs[curRun].compLength = 0;
 
-					printf("run %d: skipping sectors=%" PRId64 ", left=%d\n", curRun, (int64_t) sectorsToSkip, numSectors);
+					printf("run %d: skipping sectors=%" PRId64 ", left=%d\n", curRun, (int64_t) sectorsToSkip - remainder, numSectors);
 
 					curSector += blkx->runs[curRun].sectorCount;
 					numSectors -= blkx->runs[curRun].sectorCount;
@@ -197,7 +197,7 @@ BLKXTable* insertBLKX(AbstractFile* out, AbstractFile* in, uint32_t firstSectorN
 					blkx->runs[curRun].compOffset = out->tell(out) - blkx->dataStart;
 					blkx->runs[curRun].compLength = 0;
 
-					printf("run %d: skipping sectors=%" PRId64 ", left=%d\n", curRun, (int64_t) sectorsToSkip, numSectors);
+					printf("run %d: skipping sectors=%" PRId64 ", left=%d\n", curRun, (int64_t) remainder, numSectors);
 
 					curSector += blkx->runs[curRun].sectorCount;
 					numSectors -= blkx->runs[curRun].sectorCount;
