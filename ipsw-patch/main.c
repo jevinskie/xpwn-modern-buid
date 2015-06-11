@@ -414,6 +414,13 @@ int main(int argc, char* argv[]) {
 	rootFSPathInIPSW = fileValue->value;
 
 	size_t defaultRootSize = ((IntegerValue*) getValueByKey(info, "RootFilesystemSize"))->value;
+	for(j = mergePaths; j < argc; j++) {
+		AbstractFile* tarFile = createAbstractFileFromFile(fopen(argv[j], "rb"));
+		if(tarFile) {
+			defaultRootSize += (tarFile->getLength(tarFile) + 1024 * 1024 - 1) / (1024 * 1024);
+			tarFile->close(tarFile);
+		}
+	}
 	minimumRootSize = defaultRootSize * 1024 * 1024;
 	minimumRootSize -= minimumRootSize % 512;
 
