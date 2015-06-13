@@ -538,13 +538,14 @@ int main(int argc, char* argv[]) {
 			if (diag) {
 				printf("ERROR: Blob for %s is invalid (%s)\n", dict->dValue.key, diag);
 				error = 1;
-			}
-			for (i = 0; i < n; i++) {
-				struct component_t *centry = array + i;
-				if (centry->partial &&
-				    partialDigest->len == centry->partial->len &&
-				    !memcmp(partialDigest->value, centry->partial->value, partialDigest->len)) {
-					array[i].blob = blob;
+			} else {
+				for (i = 0; i < n; i++) {
+					struct component_t *centry = array + i;
+					if (centry->partial &&
+					    partialDigest->len == centry->partial->len &&
+					    !memcmp(partialDigest->value, centry->partial->value, partialDigest->len)) {
+						array[i].blob = blob;
+					}
 				}
 			}
 		}
