@@ -417,7 +417,7 @@ int main(int argc, char* argv[]) {
 	for(j = mergePaths; j < argc; j++) {
 		AbstractFile* tarFile = createAbstractFileFromFile(fopen(argv[j], "rb"));
 		if(tarFile) {
-			defaultRootSize += (tarFile->getLength(tarFile) + 1024 * 1024 - 1) / (1024 * 1024);
+			defaultRootSize += (tarFile->getLength(tarFile) + 1024 * 1024 - 1) / (1024 * 1024) + 1; // duh
 			tarFile->close(tarFile);
 		}
 	}
