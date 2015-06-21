@@ -815,6 +815,9 @@ int removeFile(const char* fileName, Volume* volume) {
 			io = openRawFile(((HFSPlusCatalogFile*)record)->fileID, &((HFSPlusCatalogFile*)record)->dataFork, record, volume);
 			allocate((RawFile*)io->data, 0);
 			CLOSE(io);
+			io = openRawFile(((HFSPlusCatalogFile*)record)->fileID, &((HFSPlusCatalogFile*)record)->resourceFork, record, volume);
+			allocate((RawFile*)io->data, 0);
+			CLOSE(io);
 
 			removeFromBTree(volume->catalogTree, (BTKey*)(&key));
 			XAttrList* next;
