@@ -2,6 +2,8 @@
 #include <string.h>
 #include <hfs/hfsplus.h>
 
+#define ATTRKEYLEN(n) (sizeof(HFSPlusAttrKey) - sizeof(HFSUniStr255) + (sizeof(uint16_t) * (n))) // wut?
+
 static inline void flipAttrData(HFSPlusAttrData* data) {
   FLIPENDIAN(data->recordType);
   FLIPENDIAN(data->size);
@@ -95,11 +97,11 @@ static int attrKeyWrite(off_t offset, BTKey* toWrite, io_func* io) {
 	uint16_t nodeNameLength;
 	int i;
 
-	keyLength = toWrite->keyLength;
+	nodeNameLength = ((HFSPlusAttrKey *)toWrite)->name.length;
+
+	keyLength = sizeof(uint16_t) * nodeNameLength + UNICODE_START;
 	key = (HFSPlusAttrKey*) malloc(keyLength);
 	memcpy(key, toWrite, keyLength);
-
-	nodeNameLength = key->name.length;
 
 	FLIPENDIAN(key->keyLength);
 	FLIPENDIAN(key->fileID);
@@ -175,7 +177,7 @@ static int updateAttributes(Volume* volume, HFSPlusAttrKey* skey, HFSPlusAttrRec
 	HFSPlusAttrRecord* record;
 	int ret, len;
 
-	memcpy(&key, skey, skey->keyLength);
+	memcpy(&key, skey, sizeof(uint16_t) * skey->name.length + UNICODE_START);
 
 	switch(srecord->recordType) {
 		case kHFSPlusAttrInlineData:
@@ -221,7 +223,7 @@ size_t getAttribute(Volume* volume, uint32_t fileID, const char* name, uint8_t**
 	key.fileID = fileID;
 	key.startBlock = 0;
 	ASCIIToUnicode(name, &key.name);
-	key.keyLength = sizeof(HFSPlusAttrKey) - sizeof(HFSUniStr255) + sizeof(key.name.length) + (sizeof(uint16_t) * key.name.length);
+	key.keyLength = ATTRKEYLEN(key.name.length);
 
 	*data = NULL;
 
@@ -260,7 +262,7 @@ int setAttribute(Volume* volume, uint32_t fileID, const char* name, uint8_t* dat
 	key.fileID = fileID;
 	key.startBlock = 0;
 	ASCIIToUnicode(name, &key.name);
-	key.keyLength = sizeof(HFSPlusAttrKey) - sizeof(HFSUniStr255) + sizeof(key.name.length) + (sizeof(uint16_t) * key.name.length);
+	key.keyLength = ATTRKEYLEN(key.name.length);
 
 	record = (HFSPlusAttrData*) malloc(sizeof(HFSPlusAttrData) + size);
 	memset(record, 0, sizeof(HFSPlusAttrData));
@@ -285,7 +287,7 @@ int unsetAttribute(Volume* volume, uint32_t fileID, const char* name) {
 	key.fileID = fileID;
 	key.startBlock = 0;
 	ASCIIToUnicode(name, &key.name);
-	key.keyLength = sizeof(HFSPlusAttrKey) - sizeof(HFSUniStr255) + sizeof(key.name.length) + (sizeof(uint16_t) * key.name.length);
+	key.keyLength = ATTRKEYLEN(key.name.length);
 	return removeFromBTree(volume->attrTree, (BTKey*)(&key));
 }
 
@@ -309,7 +311,7 @@ XAttrList* getAllExtendedAttributes(HFSCatalogNodeID CNID, Volume* volume) {
 	key.fileID = CNID;
 	key.startBlock = 0;
 	key.name.length = 0;
-	key.keyLength = sizeof(HFSPlusAttrKey) - sizeof(HFSUniStr255) + sizeof(key.name.length) + (sizeof(uint16_t) * key.name.length);
+	key.keyLength = ATTRKEYLEN(key.name.length);
 
 	tree = volume->attrTree;
 	record = (HFSPlusAttrRecord*) search(tree, (BTKey*)(&key), NULL, &nodeNumber, &recordNumber);

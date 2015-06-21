@@ -430,7 +430,7 @@ struct HFSPlusAttrKey {
 	uint16_t     pad;
 	uint32_t     fileID;
 	uint32_t     startBlock;
-	HFSUniStr255 name;
+	HFSUniStr255 name; /* should be 127, really */
 } __attribute__((__packed__));
 typedef struct HFSPlusAttrKey HFSPlusAttrKey;
 
