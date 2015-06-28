@@ -71,6 +71,9 @@ extern "C" {
 	void addBoolToDictionary(Dictionary* dict, const char* key, int value);
 	void addIntegerToDictionary(Dictionary* dict, const char* key, int value);
 	void addValueToDictionary(Dictionary* dict, const char* key, DictValue* value);
+	void unlinkValueFromDictionary(Dictionary* myself, DictValue *value);
+	void prependToArray(ArrayValue* array, DictValue* curValue);
+	void releaseArrayEx(ArrayValue* myself, int k);
 #ifdef __cplusplus
 }
 #endif

@@ -827,3 +827,68 @@ int patchDeviceTree(AbstractFile* file) {
 		return FALSE;
 }
 
+int mergeIdentities(Dictionary* manifest, AbstractFile *idFile) {
+	char *disk = NULL;
+	Dictionary *dict;
+	StringValue *path;
+	StringValue *mainBuildVersion, *buildVersion;
+
+	mainBuildVersion = (StringValue *)getValueByKey(manifest, "ProductBuildVersion");
+	if (!mainBuildVersion) {
+		return -1;
+	}
+
+	ArrayValue *buildIdentities = (ArrayValue *)getValueByKey(manifest, "BuildIdentities");
+	if (buildIdentities && buildIdentities->size) {
+		dict = (Dictionary *)buildIdentities->values[0];
+		if (!dict) return -1;
+		dict = (Dictionary *)getValueByKey(dict, "Manifest");
+		if (!dict) return -1;
+		dict = (Dictionary *)getValueByKey(dict, "RestoreRamDisk");
+		if (!dict) return -1;
+		dict = (Dictionary *)getValueByKey(dict, "Info");
+		if (!dict) return -1;
+		path = (StringValue *)getValueByKey(dict, "Path");
+		if (!path) return -1;
+		disk = strdup(path->value);
+	}
+	if (!disk) {
+		return -1;
+	}
+
+	Dictionary* id = NULL;
+	size_t fileLength = idFile->getLength(idFile);
+	char *plist = malloc(fileLength);
+	idFile->read(idFile, plist, fileLength);
+	id = createRoot(plist);
+	free(plist);
+
+	buildVersion = (StringValue *)getValueByKey(manifest, "ProductBuildVersion");
+	if (!buildVersion || strcmp(mainBuildVersion->value, buildVersion->value)) {
+		return -1;
+	}
+
+	ArrayValue *newIdentities = (ArrayValue *)getValueByKey(id, "BuildIdentities");
+	if (newIdentities && newIdentities->size) {
+		dict = (Dictionary *)newIdentities->values[0];
+		if (!dict) return -1;
+		dict = (Dictionary *)getValueByKey(dict, "Manifest");
+		if (!dict) return -1;
+		dict = (Dictionary *)getValueByKey(dict, "RestoreRamDisk");
+		if (!dict) return -1;
+		dict = (Dictionary *)getValueByKey(dict, "Info");
+		if (!dict) return -1;
+		path = (StringValue *)getValueByKey(dict, "Path");
+		if (!path) return -1;
+		free(path->value);
+		path->value = disk;
+		prependToArray(buildIdentities, newIdentities->values[0]);
+		unlinkValueFromDictionary(id, (DictValue *)newIdentities);
+		releaseDictionary(id);
+		releaseArrayEx(newIdentities, 0);
+		return 0;
+	}
+
+	return -1;
+}
+

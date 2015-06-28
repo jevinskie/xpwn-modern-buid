@@ -68,11 +68,12 @@ void releaseTag(Tag* tag) {
 	free(tag);
 }
 
-void releaseArray(ArrayValue* myself) {
+void releaseArrayEx(ArrayValue* myself, int k) {
 	int i;
 	
 	free(myself->dValue.key);
 	for(i = 0; i < myself->size; i++) {
+		if (i == k) continue;
 		switch(myself->values[i]->type) {
 			case DictionaryType:
 				releaseDictionary((Dictionary*) myself->values[i]);
@@ -96,6 +97,10 @@ void releaseArray(ArrayValue* myself) {
 	}
 	free(myself->values);
 	free(myself);
+}
+
+void releaseArray(ArrayValue* myself) {
+	releaseArrayEx(myself, -1);
 }
 
 void releaseDictionary(Dictionary* myself) {
@@ -547,6 +552,15 @@ DictValue* getValueByKey(Dictionary* myself, const char* key) {
 	return NULL;
 }
 
+void prependToArray(ArrayValue* array, DictValue* curValue) {
+	int i, n = array->size++;
+	array->values = realloc(array->values, sizeof(DictValue*) * array->size);
+	for (i = n; i > 0; i--) {
+		array->values[i] = array->values[i - 1];
+	}
+	array->values[0] = curValue;
+}
+
 void addStringToArray(ArrayValue* array, char* str) {
 	DictValue* curValue;
 	
@@ -598,5 +612,16 @@ void addValueToDictionary(Dictionary* dict, const char* key, DictValue* value) {
 		dict->values = value;
 	else
 		prevValue->next = value;
+}
+
+void unlinkValueFromDictionary(Dictionary* myself, DictValue *value) {
+	if (value->prev) {
+		value->prev->next = value->next;
+	} else {
+		myself->values = value->next;
+	}
+	if (value->next) {
+		value->next->prev = value->prev;
+	}
 }
 

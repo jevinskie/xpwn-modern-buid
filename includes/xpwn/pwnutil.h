@@ -19,6 +19,7 @@ extern "C" {
 	void doPatchInPlaceMemoryPatch(Volume* volume, const char* filePath, void** patch, size_t* patchSize);
 	void fixupBootNeuterArgs(Volume* volume, char unlockBaseband, char selfDestruct, char use39, char use46);
 	void createRestoreOptions(Volume* volume, const char *optionsPlist, int SystemPartitionSize, int UpdateBaseband);
+	int mergeIdentities(Dictionary* manifest, AbstractFile *idFile);
 
 	int patchSigCheck(AbstractFile* file);
 	int patchKernel(AbstractFile* file);
