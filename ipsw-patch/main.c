@@ -80,6 +80,7 @@ int main(int argc, char* argv[]) {
 	Volume* rootVolume;
 	size_t rootSize;
 	size_t preferredRootSize = 0;
+	size_t preferredRootSizeAdd = 0;
 	size_t minimumRootSize = 0;
 	
 	char* ramdiskFSPathInIPSW;
@@ -132,7 +133,7 @@ int main(int argc, char* argv[]) {
 	unsigned int* pIV = NULL;
 
 	if(argc < 3) {
-		XLOG(0, "usage %s <input.ipsw> <target.ipsw> [-b <bootimage.png>] [-r <recoveryimage.png>] [-s <system partition size>] [-memory] [-bbupdate] [-nowipe] [-e \"<action to exclude>\"] [-ramdiskgrow <blocks>] [[-unlock] [-use39] [-use46] [-cleanup] -3 <bootloader 3.9 file> -4 <bootloader 4.6 file>] <package1.tar> <package2.tar>...\n", argv[0]);
+		XLOG(0, "usage %s <input.ipsw> <target.ipsw> [-b <bootimage.png>] [-r <recoveryimage.png>] [-s <system partition size>] [-S <system partition add>] [-memory] [-bbupdate] [-nowipe] [-e \"<action to exclude>\"] [-ramdiskgrow <blocks>] [[-unlock] [-use39] [-use46] [-cleanup] -3 <bootloader 3.9 file> -4 <bootloader 4.6 file>] <package1.tar> <package2.tar>...\n", argv[0]);
 		return 0;
 	}
 
@@ -155,6 +156,14 @@ int main(int argc, char* argv[]) {
 			int size;
 			sscanf(argv[i + 1], "%d", &size);
 			preferredRootSize = size;
+			i++;
+			continue;
+		}
+
+		if(strcmp(argv[i], "-S") == 0) {
+			int size;
+			sscanf(argv[i + 1], "%d", &size);
+			preferredRootSizeAdd = size;
 			i++;
 			continue;
 		}
@@ -417,7 +426,7 @@ int main(int argc, char* argv[]) {
 	for(j = mergePaths; j < argc; j++) {
 		AbstractFile* tarFile = createAbstractFileFromFile(fopen(argv[j], "rb"));
 		if(tarFile) {
-			defaultRootSize += (tarFile->getLength(tarFile) + 1024 * 1024 - 1) / (1024 * 1024) + 1; // duh
+			defaultRootSize += (tarFile->getLength(tarFile) + 1024 * 1024 - 1) / (1024 * 1024); // poor estimate
 			tarFile->close(tarFile);
 		}
 	}
@@ -425,7 +434,7 @@ int main(int argc, char* argv[]) {
 	minimumRootSize -= minimumRootSize % 512;
 
 	if(preferredRootSize == 0) {	
-		preferredRootSize = defaultRootSize;
+		preferredRootSize = defaultRootSize + preferredRootSizeAdd;
 	}
 
 	rootSize =  preferredRootSize * 1024 * 1024;
