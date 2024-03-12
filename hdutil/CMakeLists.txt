@@ -1,8 +1,5 @@
-link_directories(${PROJECT_BINARY_DIR}/common ${PROJECT_BINARY_DIR}/hfs ${PROJECT_BINARY_DIR}/dmg)
-
 add_executable(hdutil hdutil.c)
-
-target_link_libraries (hdutil dmg hfs common)
+target_include_directories(hdutil PRIVATE ${PROJECT_SOURCE_DIR}/include)
+target_link_libraries(hdutil PRIVATE dmg hfs common)
 
 install(TARGETS hdutil DESTINATION .)
-

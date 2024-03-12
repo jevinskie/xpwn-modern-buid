@@ -19,7 +19,6 @@
  */
 
 #include <stdio.h>
-#include <usb.h>
 #include "dfu.h"
 
 /* DFU commands */
@@ -378,7 +377,7 @@ char* dfu_state_to_string( int state )
 /* Chapter 6.1.2 */
 static const char *dfu_status_names[] = {
 	[DFU_STATUS_OK]			= "No error condition is present",
-	[DFU_STATUS_errTARGET]		= 
+	[DFU_STATUS_errTARGET]		=
 		"File is not targeted for use by this device",
 	[DFU_STATUS_errFILE]		=
 		"File is for this device but fails some vendor-specific test",
@@ -417,4 +416,3 @@ const char *dfu_status_to_string(int status)
 		return "INVALID";
 	return dfu_status_names[status];
 }
-

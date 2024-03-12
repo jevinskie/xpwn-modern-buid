@@ -1,0 +1,7 @@
+if (TARGET zlib)
+    set(ZLIBNG_LIBRARIES zlib)
+    unset(ZLIBNG_INCLUDE_DIRS)
+    set(ZLIBNG_FOUND ON)
+else()
+    message(FATAL_ERROR "zlib target not found, did you add_subdirectory(zlib-ng)?")
+endif()

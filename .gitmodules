@@ -1,0 +1,9 @@
+[submodule "3rdparty/mbedtls"]
+	path = 3rdparty/mbedtls
+	url = https://github.com/Mbed-TLS/mbedtls
+[submodule "3rdparty/zlib-ng"]
+	path = 3rdparty/zlib-ng
+	url = https://github.com/zlib-ng/zlib-ng
+[submodule "3rdparty/minizip-ng"]
+	path = 3rdparty/minizip-ng
+	url = https://github.com/zlib-ng/minizip-ng

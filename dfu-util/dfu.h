@@ -21,7 +21,7 @@
 #ifndef __DFU_H__
 #define __DFU_H__
 
-#include <usb.h>
+#include <libusb.h>
 #include "usb_dfu.h"
 
 #ifdef WIN32

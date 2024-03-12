@@ -9,7 +9,6 @@
 #include <fcntl.h>
 #include <errno.h>
 #include <string.h>
-#include <usb.h>
 
 #include "dfu.h"
 #include "usb_dfu.h"
@@ -96,11 +95,11 @@ static uint32_t crc_table[256] = {
 uint32_t AppleCRC32Checksum(uint32_t* ckSum, const char *buf, size_t len)
 {
   uint32_t crc;
-  
+
   crc = *ckSum;
-  
+
   if (buf == NULL) return crc;
-  
+
   while (len >= 8)
   {
     DO8(buf);
@@ -136,7 +135,7 @@ int sam7dfu_do_dnload(struct usb_dev_handle *usb_handle, int interface,
 	if (fileSize <= 0 /* + DFU_HDR */) {
 		fprintf(stderr, "File seems a bit too small...\n");
 		ret = -EINVAL;
-		goto out_close;	
+		goto out_close;
 	}
 
 	int totalSend = fileSize + 16;
@@ -220,7 +219,7 @@ int sam7dfu_do_dnload(struct usb_dev_handle *usb_handle, int interface,
 	ret = dfu_download(usb_handle, interface, 0, NULL);
 	if (ret >= 0)
 		ret = bytes_sent;
-	
+
 	printf("] finished!\n");
 	fflush(stdout);
 
@@ -231,7 +230,7 @@ get_status:
 		fprintf(stderr, "unable to read DFU status\n");
 		goto out_close;
 	}
-	printf("state(%u) = %s, status(%u) = %s\n", dst.bState, 
+	printf("state(%u) = %s, status(%u) = %s\n", dst.bState,
 		dfu_state_to_string(dst.bState), dst.bStatus,
 		dfu_status_to_string(dst.bStatus));
 
@@ -249,7 +248,7 @@ get_status:
 #if 0
 	printf("Resetting USB...\n");
 	if (usb_reset(usb_handle) < 0) {
-		fprintf(stderr, "error resetting after download: %s\n", 
+		fprintf(stderr, "error resetting after download: %s\n",
 			usb_strerror());
 	}
 #endif
@@ -266,5 +265,3 @@ void sam7dfu_init()
     dfu_debug( debug );
     dfu_init( 5000 );
 }
-
-

@@ -24,7 +24,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <getopt.h>
-#include <usb.h>
 #include <errno.h>
 
 #include <stdint.h>
@@ -100,7 +99,7 @@ static int find_dfu_if(struct usb_device *dev, int (*handler)(struct dfu_if *, v
 	int rc;
 
 	memset(dfu_if, 0, sizeof(*dfu_if));
-	
+
 	for (cfg_idx = 0; cfg_idx < dev->descriptor.bNumConfigurations;
 	     cfg_idx++) {
 		cfg = &dev->config[cfg_idx];
@@ -126,12 +125,12 @@ static int find_dfu_if(struct usb_device *dev, int (*handler)(struct dfu_if *, v
 					dfu_if->product =
 						dev->descriptor.idProduct;
 					dfu_if->configuration = cfg_idx;
-					dfu_if->interface = 
+					dfu_if->interface =
 						intf->bInterfaceNumber;
-					dfu_if->altsetting = 
+					dfu_if->altsetting =
 						intf->bAlternateSetting;
 					if (intf->bInterfaceProtocol == 2)
-						dfu_if->flags |= 
+						dfu_if->flags |=
 							DFU_IFF_DFU;
 					else
 						dfu_if->flags &=
@@ -170,7 +169,7 @@ static int print_dfu_if(struct dfu_if *dfu_if, void *v)
 			usb_get_string_simple(dfu_if->dev_handle, if_name_str_idx, name, MAX_STR_LEN);
 	}
 
-	printf("Found %s: [0x%04x:0x%04x] devnum=%u, cfg=%u, intf=%u, alt=%u, name=\"%s\"\n", 
+	printf("Found %s: [0x%04x:0x%04x] devnum=%u, cfg=%u, intf=%u, alt=%u, name=\"%s\"\n",
 	       dfu_if->flags & DFU_IFF_DFU ? "DFU" : "Runtime",
 	       dev->descriptor.idVendor, dev->descriptor.idProduct,
 	       dev->devnum, dfu_if->configuration, dfu_if->interface,
@@ -329,7 +328,7 @@ int download(AbstractFile* file, unsigned int transfer_size, int final_reset)
 	struct usb_dfu_func_descriptor func_dfu;
 	char *alt_name = NULL; /* query alt name if non-NULL */
 	int ret;
-	
+
 	printf("dfu-util - (C) 2007 by OpenMoko Inc. Hacked by the iPhone Dev Team\n"
 	       "This program is Free Software and has ABSOLUTELY NO WARRANTY\n\n");
 
@@ -528,7 +527,7 @@ status_again:
 		printf("Resetting USB to switch back to runtime mode\n");
 		ret = usb_reset(dif->dev_handle);
 		if (ret < 0 && ret != -ENODEV) {
-			fprintf(stderr, "error resetting after download: %s\n", 
+			fprintf(stderr, "error resetting after download: %s\n",
 			usb_strerror());
 		}
 	}
@@ -580,4 +579,3 @@ int main(int argc, char* argv[]) {
 
 	return 0;
 }
-
